@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://5jhvb1nbkth"
-path="res://.godot/imported/Mapa_Veracruz.png-99a549fd5d3d84d5c57017232ae2a08a.ctex"
+uid="uid://3083qgflbbwt"
+path="res://.godot/imported/Bloque-2.png-d2afab2f795d632eb40068aa4ac61adf.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Mapa_Veracruz.png"
-dest_files=["res://.godot/imported/Mapa_Veracruz.png-99a549fd5d3d84d5c57017232ae2a08a.ctex"]
+source_file="res://assets/Bloque-2.png"
+dest_files=["res://.godot/imported/Bloque-2.png-d2afab2f795d632eb40068aa4ac61adf.ctex"]
 
 [params]
 
