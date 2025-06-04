@@ -1,8 +1,9 @@
-[gd_scene load_steps=5 format=3 uid="uid://vej20q6oy03v"]
+[gd_scene load_steps=6 format=3 uid="uid://vej20q6oy03v"]
 
 [ext_resource type="Texture2D" uid="uid://v3toqe8lhsde" path="res://assets/Mapa_Veracruz-2.png" id="1_uwrxv"]
 [ext_resource type="Script" uid="uid://dq1xagrx4jyit" path="res://scenes/game.gd" id="1_yqjtg"]
 [ext_resource type="Script" uid="uid://c60iffdjjxrk0" path="res://scenes/camera_2d.gd" id="2_lnu2h"]
+[ext_resource type="Texture2D" uid="uid://b2e67uncwgxpn" path="res://assets/buildings/PuertoAstillero_Lvl_1.png" id="4_lbhrr"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_80nbo"]
 size = Vector2(16.8413, 25.6203)
@@ -76,3 +77,8 @@ skew = 0.523599
 shape = SubResource("RectangleShape2D_80nbo")
 
 [node name="WorldScene" type="Node2D" parent="SceneManager"]
+
+[node name="PuertoAstilleroLvl1" type="Sprite2D" parent="."]
+position = Vector2(1185, 766)
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("4_lbhrr")
