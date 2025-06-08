@@ -1,9 +1,11 @@
-[gd_scene load_steps=6 format=3 uid="uid://vej20q6oy03v"]
+[gd_scene load_steps=8 format=3 uid="uid://vej20q6oy03v"]
 
 [ext_resource type="Texture2D" uid="uid://v3toqe8lhsde" path="res://assets/Mapa_Veracruz-2.png" id="1_uwrxv"]
 [ext_resource type="Script" uid="uid://dq1xagrx4jyit" path="res://scenes/game.gd" id="1_yqjtg"]
 [ext_resource type="Script" uid="uid://c60iffdjjxrk0" path="res://scenes/camera_2d.gd" id="2_lnu2h"]
+[ext_resource type="Texture2D" uid="uid://3083qgflbbwt" path="res://assets/Bloque-2.png" id="4_iywne"]
 [ext_resource type="Texture2D" uid="uid://b2e67uncwgxpn" path="res://assets/buildings/PuertoAstillero_Lvl_1.png" id="4_lbhrr"]
+[ext_resource type="Script" uid="uid://b7s4rko8pereq" path="res://scripts/construction_area.gd" id="4_p57ef"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_80nbo"]
 size = Vector2(16.8413, 25.6203)
@@ -60,20 +62,536 @@ script = ExtResource("2_lnu2h")
 
 [node name="CityScene" type="Node2D" parent="SceneManager"]
 
+[node name="CityUIManager" type="CanvasLayer" parent="SceneManager/CityScene"]
+
+[node name="VBoxContainer" type="VBoxContainer" parent="SceneManager/CityScene/CityUIManager"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Spacer" type="Control" parent="SceneManager/CityScene/CityUIManager/VBoxContainer"]
+custom_minimum_size = Vector2(0, 880)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="PanelContainer" type="PanelContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer"]
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer"]
+layout_mode = 2
+
+[node name="Building0" type="MarginContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building0"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building0/VBoxContainer"]
+layout_mode = 2
+text = "BUILDING0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TextureButton" type="TextureButton" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building0/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+texture_normal = ExtResource("4_iywne")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="HBoxContainer" type="HBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building0/VBoxContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building0/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TextureRect" type="TextureRect" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building0/VBoxContainer/HBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+expand_mode = 1
+
+[node name="Label" type="Label" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building0/VBoxContainer/HBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "50"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building0/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TextureRect" type="TextureRect" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building0/VBoxContainer/HBoxContainer/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building0/VBoxContainer/HBoxContainer/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "100"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Building1" type="MarginContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building1"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building1/VBoxContainer"]
+layout_mode = 2
+text = "BUILDING0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TextureButton" type="TextureButton" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building1/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building1/VBoxContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building1/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TextureRect" type="TextureRect" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building1/VBoxContainer/HBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building1/VBoxContainer/HBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "50"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building1/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TextureRect" type="TextureRect" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building1/VBoxContainer/HBoxContainer/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building1/VBoxContainer/HBoxContainer/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "100"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Building2" type="MarginContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building2"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building2/VBoxContainer"]
+layout_mode = 2
+text = "BUILDING0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TextureButton" type="TextureButton" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building2/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building2/VBoxContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building2/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TextureRect" type="TextureRect" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building2/VBoxContainer/HBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building2/VBoxContainer/HBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "50"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building2/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TextureRect" type="TextureRect" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building2/VBoxContainer/HBoxContainer/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building2/VBoxContainer/HBoxContainer/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "100"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Building3" type="MarginContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building3"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building3/VBoxContainer"]
+layout_mode = 2
+text = "BUILDING0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TextureButton" type="TextureButton" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building3/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building3/VBoxContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building3/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TextureRect" type="TextureRect" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building3/VBoxContainer/HBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building3/VBoxContainer/HBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "50"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building3/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TextureRect" type="TextureRect" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building3/VBoxContainer/HBoxContainer/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building3/VBoxContainer/HBoxContainer/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "100"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Building4" type="MarginContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building4"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building4/VBoxContainer"]
+layout_mode = 2
+text = "BUILDING0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TextureButton" type="TextureButton" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building4/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building4/VBoxContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building4/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TextureRect" type="TextureRect" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building4/VBoxContainer/HBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building4/VBoxContainer/HBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "50"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building4/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TextureRect" type="TextureRect" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building4/VBoxContainer/HBoxContainer/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building4/VBoxContainer/HBoxContainer/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "100"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Building5" type="MarginContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building5"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building5/VBoxContainer"]
+layout_mode = 2
+text = "BUILDING0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TextureButton" type="TextureButton" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building5/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building5/VBoxContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building5/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TextureRect" type="TextureRect" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building5/VBoxContainer/HBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building5/VBoxContainer/HBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "50"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building5/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TextureRect" type="TextureRect" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building5/VBoxContainer/HBoxContainer/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building5/VBoxContainer/HBoxContainer/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "100"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Building6" type="MarginContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building6"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building6/VBoxContainer"]
+layout_mode = 2
+text = "BUILDING0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TextureButton" type="TextureButton" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building6/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building6/VBoxContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building6/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TextureRect" type="TextureRect" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building6/VBoxContainer/HBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building6/VBoxContainer/HBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "50"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building6/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TextureRect" type="TextureRect" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building6/VBoxContainer/HBoxContainer/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building6/VBoxContainer/HBoxContainer/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "100"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Building7" type="MarginContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building7"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building7/VBoxContainer"]
+layout_mode = 2
+text = "BUILDING0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TextureButton" type="TextureButton" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building7/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building7/VBoxContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building7/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TextureRect" type="TextureRect" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building7/VBoxContainer/HBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building7/VBoxContainer/HBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "50"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building7/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TextureRect" type="TextureRect" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building7/VBoxContainer/HBoxContainer/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building7/VBoxContainer/HBoxContainer/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "100"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Building8" type="MarginContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building8"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building8/VBoxContainer"]
+layout_mode = 2
+text = "BUILDING0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TextureButton" type="TextureButton" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building8/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building8/VBoxContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building8/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TextureRect" type="TextureRect" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building8/VBoxContainer/HBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building8/VBoxContainer/HBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "50"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building8/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TextureRect" type="TextureRect" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building8/VBoxContainer/HBoxContainer/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer/Building8/VBoxContainer/HBoxContainer/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "100"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="CitySprite" type="Sprite2D" parent="SceneManager/CityScene"]
 scale = Vector2(0.5, 0.5)
 texture = ExtResource("1_uwrxv")
 centered = false
 
-[node name="Node2D" type="Node2D" parent="SceneManager/CityScene/CitySprite"]
+[node name="ConstructionAreas" type="Node2D" parent="SceneManager/CityScene/CitySprite"]
 
-[node name="Area2D" type="Area2D" parent="SceneManager/CityScene/CitySprite/Node2D"]
+[node name="Area2x1" type="Node2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas"]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="SceneManager/CityScene/CitySprite/Node2D/Area2D"]
+[node name="Area2x1" type="Area2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/Area2x1"]
+script = ExtResource("4_p57ef")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/Area2x1/Area2x1"]
 position = Vector2(1448.74, 1099.62)
 rotation = 0.526688
 scale = Vector2(8.64249, -11.3975)
 skew = 0.523599
+shape = SubResource("RectangleShape2D_80nbo")
+
+[node name="Area2x2" type="Node2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas"]
+
+[node name="Area2x2" type="Area2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/Area2x2"]
+script = ExtResource("4_p57ef")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/Area2x2/Area2x2"]
+position = Vector2(1448, 1532)
+rotation = 0.526688
+scale = Vector2(8.64249, -11.3975)
+skew = 0.523599
+shape = SubResource("RectangleShape2D_80nbo")
+
+[node name="AreaWall" type="Node2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas"]
+
+[node name="AreaWall" type="Area2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/AreaWall"]
+script = ExtResource("4_p57ef")
+area_type = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/AreaWall/AreaWall"]
+position = Vector2(588, 618)
+rotation = 0.526688
+scale = Vector2(8.64249, -11.3975)
+skew = 0.523599
+shape = SubResource("RectangleShape2D_80nbo")
+
+[node name="AreaWarehouse" type="Node2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas"]
+
+[node name="AreaWarehouse" type="Area2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/AreaWarehouse"]
+script = ExtResource("4_p57ef")
+area_type = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/AreaWarehouse/AreaWarehouse"]
+position = Vector2(2766, 1400)
+rotation = -0.527089
+scale = Vector2(8.642, -11.398)
+skew = -0.523599
 shape = SubResource("RectangleShape2D_80nbo")
 
 [node name="WorldScene" type="Node2D" parent="SceneManager"]

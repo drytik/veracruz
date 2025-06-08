@@ -26,7 +26,8 @@ window/stretch/aspect="expand"
 folder_colors={
 "res://assets/": "green",
 "res://data_structures/": "yellow",
-"res://scenes/": "blue"
+"res://scenes/": "blue",
+"res://scripts/": "purple"
 }
 
 [input]
