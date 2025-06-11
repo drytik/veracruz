@@ -1,8 +1,9 @@
-[gd_scene load_steps=7 format=3 uid="uid://vej20q6oy03v"]
+[gd_scene load_steps=8 format=3 uid="uid://vej20q6oy03v"]
 
 [ext_resource type="Texture2D" uid="uid://v3toqe8lhsde" path="res://assets/Mapa_Veracruz-2.png" id="1_uwrxv"]
 [ext_resource type="Script" uid="uid://dq1xagrx4jyit" path="res://scenes/game.gd" id="1_yqjtg"]
 [ext_resource type="Script" uid="uid://c60iffdjjxrk0" path="res://scenes/camera_2d.gd" id="2_lnu2h"]
+[ext_resource type="Script" uid="uid://c15ufn07nbgy5" path="res://scenes/city_ui_manager.gd" id="3_p57ef"]
 [ext_resource type="Texture2D" uid="uid://b2e67uncwgxpn" path="res://assets/buildings/PuertoAstillero_Lvl_1.png" id="4_lbhrr"]
 [ext_resource type="Script" uid="uid://b7s4rko8pereq" path="res://scripts/construction_area.gd" id="4_p57ef"]
 
@@ -62,6 +63,7 @@ script = ExtResource("2_lnu2h")
 [node name="CityScene" type="Node2D" parent="SceneManager"]
 
 [node name="CityUIManager" type="CanvasLayer" parent="SceneManager/CityScene"]
+script = ExtResource("3_p57ef")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="SceneManager/CityScene/CityUIManager"]
 anchors_preset = 15
@@ -100,7 +102,7 @@ text = "BUILDING0"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="TextureButton" type="TextureButton" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer2/HBoxContainer/Building0/VBoxContainer"]
+[node name="Port" type="TextureButton" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/PanelContainer/HBoxContainer2/HBoxContainer/Building0/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 texture_normal = ExtResource("4_lbhrr")
