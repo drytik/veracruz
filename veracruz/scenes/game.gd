@@ -7,7 +7,7 @@ static var ref : Game
 
 func _init() -> void:
 	if ref == null: 
-		ref == self
+		ref = self
 	else: 
 		queue_free()
 

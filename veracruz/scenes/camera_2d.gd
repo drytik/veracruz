@@ -17,7 +17,7 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	_zoom_camera(delta)
 	_move_camera(delta)
-	_debug()
+#	_debug()
 
 func _zoom_camera(delta):
 	
@@ -47,5 +47,5 @@ func _move_camera(delta):
 		position += moveAmount * delta * move_speed * (1/zoom.x)
 	
 	
-func _debug(): 
-	print (position)
+#func _debug(): 
+	#print (position)
