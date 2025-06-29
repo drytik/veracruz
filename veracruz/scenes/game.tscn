@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://vej20q6oy03v"]
+[gd_scene load_steps=11 format=3 uid="uid://vej20q6oy03v"]
 
 [ext_resource type="Texture2D" uid="uid://v3toqe8lhsde" path="res://assets/Mapa_Veracruz-2.png" id="1_uwrxv"]
 [ext_resource type="Script" uid="uid://dq1xagrx4jyit" path="res://scenes/game.gd" id="1_yqjtg"]
@@ -6,6 +6,9 @@
 [ext_resource type="Script" uid="uid://c15ufn07nbgy5" path="res://scenes/city_ui_manager.gd" id="3_p57ef"]
 [ext_resource type="Texture2D" uid="uid://b2e67uncwgxpn" path="res://assets/buildings/PuertoAstillero_Lvl_1.png" id="4_lbhrr"]
 [ext_resource type="Script" uid="uid://b7s4rko8pereq" path="res://scripts/construction_area.gd" id="4_p57ef"]
+[ext_resource type="Texture2D" uid="uid://b2yogvcd6fv7u" path="res://assets/buildings/Taberna_Lvl_1.png" id="5_gee14"]
+[ext_resource type="Texture2D" uid="uid://csnvosc3c0iiy" path="res://assets/buildings/Casa_Del_Gobernador_Lvl_1.png" id="6_0tnpc"]
+[ext_resource type="Texture2D" uid="uid://dvh3vjaisu0ly" path="res://assets/buildings/Ayuntamiento_Lvl_1.png" id="7_0tnpc"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_80nbo"]
 size = Vector2(16.8413, 25.6203)
@@ -196,6 +199,9 @@ vertical_alignment = 1
 [node name="TextureButton" type="TextureButton" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/HBoxContainer/PanelContainer/HBoxContainer2/HBoxContainer/Building1/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
+texture_normal = ExtResource("5_gee14")
+ignore_texture_size = true
+stretch_mode = 5
 
 [node name="HBoxContainer" type="HBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/HBoxContainer/PanelContainer/HBoxContainer2/HBoxContainer/Building1/VBoxContainer"]
 layout_mode = 2
@@ -246,6 +252,10 @@ vertical_alignment = 1
 [node name="TextureButton" type="TextureButton" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/HBoxContainer/PanelContainer/HBoxContainer2/HBoxContainer/Building2/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
+texture_normal = ExtResource("6_0tnpc")
+texture_pressed = ExtResource("6_0tnpc")
+ignore_texture_size = true
+stretch_mode = 5
 
 [node name="HBoxContainer" type="HBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/HBoxContainer/PanelContainer/HBoxContainer2/HBoxContainer/Building2/VBoxContainer"]
 layout_mode = 2
@@ -296,6 +306,9 @@ vertical_alignment = 1
 [node name="TextureButton" type="TextureButton" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/HBoxContainer/PanelContainer/HBoxContainer2/HBoxContainer/Building3/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
+texture_normal = ExtResource("7_0tnpc")
+ignore_texture_size = true
+stretch_mode = 5
 
 [node name="HBoxContainer" type="HBoxContainer" parent="SceneManager/CityScene/CityUIManager/VBoxContainer/HBoxContainer/PanelContainer/HBoxContainer2/HBoxContainer/Building3/VBoxContainer"]
 layout_mode = 2
@@ -1004,59 +1017,54 @@ centered = false
 
 [node name="ConstructionAreas" type="Node2D" parent="SceneManager/CityScene/CitySprite"]
 
-[node name="Area2x1" type="Node2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas"]
+[node name="Area2x1_1" type="Node2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas"]
 
-[node name="Area2x1" type="Area2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/Area2x1"]
+[node name="Area2x1" type="Area2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/Area2x1_1"]
 script = ExtResource("4_p57ef")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/Area2x1/Area2x1"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/Area2x1_1/Area2x1"]
 position = Vector2(1448.74, 1099.62)
 rotation = 0.526688
 scale = Vector2(8.64249, -11.3975)
 skew = 0.523599
 shape = SubResource("RectangleShape2D_80nbo")
 
-[node name="Area2x2" type="Node2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas"]
+[node name="Area2x1_2" type="Node2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas"]
 
-[node name="Area2x2" type="Area2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/Area2x2"]
+[node name="Area2x1" type="Area2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/Area2x1_2"]
 script = ExtResource("4_p57ef")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/Area2x2/Area2x2"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/Area2x1_2/Area2x1"]
 position = Vector2(1448, 1532)
 rotation = 0.526688
 scale = Vector2(8.64249, -11.3975)
 skew = 0.523599
 shape = SubResource("RectangleShape2D_80nbo")
 
-[node name="AreaWall" type="Node2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas"]
+[node name="Area2x1_3" type="Node2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas"]
 
-[node name="AreaWall" type="Area2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/AreaWall"]
+[node name="Area2x1" type="Area2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/Area2x1_3"]
 script = ExtResource("4_p57ef")
-area_type = 1
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/AreaWall/AreaWall"]
-position = Vector2(588, 618)
-rotation = 0.526688
-scale = Vector2(8.64249, -11.3975)
-skew = 0.523599
-shape = SubResource("RectangleShape2D_80nbo")
-
-[node name="AreaWarehouse" type="Node2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas"]
-
-[node name="AreaWarehouse" type="Area2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/AreaWarehouse"]
-script = ExtResource("4_p57ef")
-area_type = 2
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/AreaWarehouse/AreaWarehouse"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/Area2x1_3/Area2x1"]
 position = Vector2(2766, 1400)
 rotation = -0.527089
 scale = Vector2(8.642, -11.398)
 skew = -0.523599
 shape = SubResource("RectangleShape2D_80nbo")
 
-[node name="WorldScene" type="Node2D" parent="SceneManager"]
+[node name="AreaWall" type="Node2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas"]
 
-[node name="PuertoAstilleroLvl1" type="Sprite2D" parent="."]
-position = Vector2(1185, 766)
-scale = Vector2(0.5, 0.5)
-texture = ExtResource("4_lbhrr")
+[node name="Area2x1" type="Area2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/AreaWall"]
+script = ExtResource("4_p57ef")
+area_type = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/AreaWall/Area2x1"]
+position = Vector2(588, 618)
+rotation = 0.526688
+scale = Vector2(8.64249, -11.3975)
+skew = 0.523599
+shape = SubResource("RectangleShape2D_80nbo")
+
+[node name="WorldScene" type="Node2D" parent="SceneManager"]
+visible = false

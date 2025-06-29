@@ -3,27 +3,106 @@ extends CanvasLayer
 @onready var tooltip = $TooltipPanel
 @onready var button1 = $VBoxContainer/HBoxContainer/SideButtons/VBoxContainer/Button
 @onready var button2 = $VBoxContainer/HBoxContainer/SideButtons/VBoxContainer/Button2
+@onready var city_scene: Node2D = $".."
+
 
 signal building_selected
 
 var buildings: Dictionary = {
-	"Port": {"name": "Port", "description": "Permite el comercio marítimo y la llegada de nuevos colonos. Genera ingresos por comercio."},
-	"Lighthouse": {"name": "Lighthouse", "description": "Guía a los barcos hacia el puerto de forma segura. Reduce el riesgo de naufragios y aumenta el comercio."}, 
-	"Wall": {"name": "Wall", "description": "Fortificación defensiva que protege la ciudad de ataques piratas y potencias enemigas."}, 
-	"Tabern": {"name": "Tabern", "description": "Lugar de encuentro social donde los colonos se reúnen. Mejora el bienestar y la información comercial."}, 
-	"Palace": {"name": "Palace", "description": "Residencia del Virrey. Centro del poder colonial que aumenta la influencia política de la ciudad."}, 
-	"Church": {"name": "Church", "description": "Centro espiritual de la colonia. Evangeliza a los nativos y mejora la moral de los colonos."}, 
-	"Warehouse": {"name": "Warehouse", "description": "Aumenta la capacidad de almacenamiento de mercancías antes de enviarlas a España."}, 
-	"Hospital": {"name": "Hospital", "description": "Atiende a enfermos y heridos. Reduce la mortalidad y mejora la salud de la población."}, 
-	"CityHall": {"name": "CityHall", "description": "Sede del gobierno local. Permite decretar ordenanzas y gestionar los asuntos municipales."}, 
-	"Market": {"name": "Market", "description": "Plaza comercial donde se intercambian productos locales. Centro económico de la ciudad."}, 
-	"Weaving": {"name": "Weaving", "description": "Transforma algodón en telas y textiles. Produce ropa para los colonos y productos de exportación."}, 
-	"Carpentry": {"name": "Carpentry", "description": "Procesa madera para crear herramientas, muebles y materiales de construcción."}, 
-	"Forge": {"name": "Forge", "description": "Forja herramientas y armas de metal. Esencial para el desarrollo agrícola y la defensa."}, 
-	"Distillery": {"name": "Distillery", "description": "Produce bebidas alcohólicas como aguardiente. Genera ingresos y mejora la moral colonial."}, 
-	"Mill": {"name": "Mill", "description": "Procesa granos para convertirlos en harina. Base de la alimentación de la población."}, 
+	"Port": {
+		"name": "Port", 
+		"description": "Permite el comercio marítimo y la llegada de nuevos colonos. Genera ingresos por comercio.",
+		"texture_path": "res://assets/buildings/PuertoAstillero_Lvl_1.png",
+		"allowed_area_types": ""
+		},
+	"Tabern": {
+		"name": "Tabern", 
+		"description": "Lugar de encuentro social donde los colonos se reúnen. Mejora el bienestar y la información comercial.",
+		"texture_path": "res://assets/buildings/Taberna_Lvl_1.png",
+		"allowed_area_types": [ConstructionArea.TYPE.x2x1]
+		}, 
+	"Lighthouse": {
+		"name": "Lighthouse", 
+		"description": "Guía a los barcos hacia el puerto de forma segura. Reduce el riesgo de naufragios y aumenta el comercio.",
+		"texture_path": "",
+		"allowed_area_types": ""
+		}, 
+	"Wall": {
+		"name": "Wall", 
+		"description": "Fortificación defensiva que protege la ciudad de ataques piratas y potencias enemigas.",
+		"texture_path": "",
+		"allowed_area_types": ""
+		}, 
+	"Palace": {
+		"name": "Palace", 
+		"description": "Residencia del Virrey. Centro del poder colonial que aumenta la influencia política de la ciudad.",
+		"texture_path": "res://assets/buildings/Casa_Del_Gobernador_Lvl_1.png",
+		"allowed_area_types": ""
+		}, 
+	"Church": {
+		"name": "Church", 
+		"description": "Centro espiritual de la colonia. Evangeliza a los nativos y mejora la moral de los colonos.",
+		"texture_path": "",
+		"allowed_area_types": ""
+		}, 
+	"Warehouse": {
+		"name": "Warehouse", 
+		"description": "Aumenta la capacidad de almacenamiento de mercancías antes de enviarlas a España.",
+		"texture_path": "",
+		"allowed_area_types": ""
+		}, 
+	"Hospital": {
+		"name": "Hospital", 
+		"description": "Atiende a enfermos y heridos. Reduce la mortalidad y mejora la salud de la población.",
+		"texture_path": "",
+		"allowed_area_types": ""
+		}, 
+	"CityHall": {
+		"name": "CityHall", 
+		"description": "Sede del gobierno local. Permite decretar ordenanzas y gestionar los asuntos municipales.",
+		"texture_path": "res://assets/buildings/Ayuntamiento_Lvl_1.png",
+		"allowed_area_types": ""
+		}, 
+	"Market": {
+		"name": "Market", 
+		"description": "Plaza comercial donde se intercambian productos locales. Centro económico de la ciudad.",
+		"texture_path": "",
+		"allowed_area_types": ""
+		}, 
+	"Weaving": {
+		"name": "Weaving", 
+		"description": "Transforma algodón en telas y textiles. Produce ropa para los colonos y productos de exportación.",
+		"texture_path": "",
+		"allowed_area_types": ""
+		}, 
+	"Carpentry": {
+		"name": "Carpentry", 
+		"description": "Procesa madera para crear herramientas, muebles y materiales de construcción.",
+		"texture_path": "",
+		"allowed_area_types": ""
+		}, 
+	"Forge": {
+		"name": "Forge", 
+		"description": "Forja herramientas y armas de metal. Esencial para el desarrollo agrícola y la defensa.",
+		"texture_path": "",
+		"allowed_area_types": ""
+		}, 
+	"Distillery": {
+		"name": "Distillery", 
+		"description": "Produce bebidas alcohólicas como aguardiente. Genera ingresos y mejora la moral colonial.",
+		"texture_path": "",
+		"allowed_area_types": ""
+		}, 
+	"Mill": {
+		"name": "Mill", 
+		"description": "Procesa granos para convertirlos en harina. Base de la alimentación de la población.",
+		"texture_path": "",
+		"allowed_area_types": ""
+		}, 
 	}
 	
+var construction_areas: Array = []
+
 ## BUILDING STATE MACHINE
 
 # Construction States
@@ -45,7 +124,7 @@ func _ready() -> void:
 	visible = false
 	tooltip.visible = false
 	
-	var building_ids_menu1: Array = ["Port", "Lighthouse", "Wall", "Tabern", "Palace", "Church", "Warehouse", "Hospital"]
+	var building_ids_menu1: Array = ["Port", "Tabern", "Lighthouse", "Wall", "Palace", "Church", "Warehouse", "Hospital"]
 	var building_ids_menu2: Array = ["CityHall", "Market", "Weaving", "Carpentry", "Forge", "Distillery", "Mill"]
 	
 	for i in range(building_ids_menu1.size()): 
@@ -56,7 +135,13 @@ func _ready() -> void:
 			button.connect("pressed", _on_building_selected.bind(building_ids_menu1[i]))
 			button.connect("mouse_entered", _on_building_hover.bind(building_ids_menu1[i], button))
 			button.connect("mouse_exited", _on_building_hover_exit)
-	
+			
+		var label_path = "VBoxContainer/HBoxContainer/PanelContainer/HBoxContainer2/HBoxContainer/Building" + str(i) + "/VBoxContainer/Label"
+		var label = get_node(label_path) as Label
+		
+		if label: 
+			label.text = str(building_ids_menu1[i])
+		
 	for i in range(building_ids_menu2.size()): 
 		var button_path = "VBoxContainer/HBoxContainer/PanelContainer2/HBoxContainer2/HBoxContainer/Building" + str(i) + "/VBoxContainer/TextureButton"
 		var button = get_node(button_path) as TextureButton
@@ -65,6 +150,12 @@ func _ready() -> void:
 			button.connect("pressed", _on_building_selected.bind(building_ids_menu2[i]))
 			button.connect("mouse_entered", _on_building_hover.bind(building_ids_menu2[i], button))
 			button.connect("mouse_exited", _on_building_hover_exit)
+			
+		var label_path = "VBoxContainer/HBoxContainer/PanelContainer2/HBoxContainer2/HBoxContainer/Building" + str(i) + "/VBoxContainer/Label"
+		var label = get_node(label_path) as Label
+	
+		if label: 
+			label.text = str(building_ids_menu2[i])
 			
 	button1.connect("pressed", _on_menu_button_pressed.bind(0))
 	button2.connect("pressed", _on_menu_button_pressed.bind(1))
@@ -90,10 +181,10 @@ func _toggle_menu(menu_index: int) -> void:
 	
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("construction_menu"):
-		if current_state == BuildingState.NORMAL:
+		if city_scene and city_scene.visible and current_state == BuildingState.NORMAL:
 			_toggle_construction_menu()
 			
-	if current_state == BuildingState.BUILDING:
+	if city_scene and city_scene.visible and current_state == BuildingState.BUILDING:
 		if event.is_action_pressed("cancel_construction"):
 			_cancel_building_mode()
 
@@ -110,15 +201,22 @@ func _on_building_selected(building_key: String) -> void:
 func _start_building_mode(building_id: String) -> void: 
 	current_state = BuildingState.BUILDING
 	selected_building_id = building_id
-	
+	construction_areas = get_tree().get_nodes_in_group("construction_areas")
 	# TODO: animación cuando selecciono el edificio 
 	#$VBoxContainer.modulate.a = 0.8
 	visible = false
 	
+	_show_all_available_areas()
 	_create_building_preview(building_id)
 	
 	print ("Modo construcción para: " + building_id)
-	
+
+func _show_all_available_areas() -> void: 
+	for area in construction_areas: 
+		if not area.is_occupied: 
+			area.show_highlight()
+			print("Mostrando área disponible")
+
 func _create_building_preview(building_id: String) -> void: 
 	if building_preview: 
 		building_preview.queue_redraw()
@@ -128,7 +226,10 @@ func _create_building_preview(building_id: String) -> void:
 	
 	#TODO: mapear cada building a su textura correspondiente
 	
-	building_preview.texture = load("res://assets/buildings/PuertoAstillero_Lvl_1.png")
+	var building_data = buildings.get(building_id, {})
+	var texture_path = building_data.get("texture_path", "")
+	if texture_path != "":
+		building_preview.texture = load(texture_path)
 	
 	building_preview.modulate.a = 0.8
 	building_preview.z_index = 100
@@ -148,11 +249,16 @@ func _cancel_building_mode() -> void:
 	selected_building_id = ""
 	
 	$VBoxContainer.modulate.a = 1.0
+	_hide_all_highlights()
 	
 	visible = true
 	if building_preview: 
 		building_preview.queue_free()
 		building_preview = null
+
+func _hide_all_highlights() -> void: 
+	for area in construction_areas: 
+		area.hide_highlight()
 		
 func _on_building_hover(building_key: String, button: TextureButton) -> void: 
 	var building_data = buildings.get(building_key, null)
