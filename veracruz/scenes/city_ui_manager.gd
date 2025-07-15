@@ -13,13 +13,13 @@ var buildings: Dictionary = {
 		"name": "Port", 
 		"description": "Permite el comercio marítimo y la llegada de nuevos colonos. Genera ingresos por comercio.",
 		"texture_path": "res://assets/buildings/PuertoAstillero_Lvl_1.png",
-		"allowed_area_types": ""
+		"allowed_area_types": [5]
 		},
 	"Tabern": {
 		"name": "Tabern", 
 		"description": "Lugar de encuentro social donde los colonos se reúnen. Mejora el bienestar y la información comercial.",
 		"texture_path": "res://assets/buildings/Taberna_Lvl_1.png",
-		"allowed_area_types": [ConstructionArea.TYPE.x2x1]
+		"allowed_area_types": ""
 		}, 
 	"Lighthouse": {
 		"name": "Lighthouse", 
@@ -116,7 +116,7 @@ enum BuildingState {
 
 var current_state: BuildingState = BuildingState.NORMAL
 var selected_building_id: String = ""
-var building_preview: Sprite2D = null
+var building_preview: Node2D = null
 
 func _ready() -> void:
 	
@@ -160,9 +160,30 @@ func _ready() -> void:
 	button1.connect("pressed", _on_menu_button_pressed.bind(0))
 	button2.connect("pressed", _on_menu_button_pressed.bind(1))
 
+
 func _process(delta: float) -> void: 
-	if current_state == BuildingState.BUILDING and building_preview: 
-		building_preview.global_position = get_viewport().get_mouse_position()
+	if current_state == BuildingState.BUILDING and building_preview:
+		var mouse_pos = get_viewport().get_mouse_position()
+		var valid_area = _find_closest_valid_area(mouse_pos)
+		
+		if valid_area:
+			print("SNAP a: ", valid_area.name)
+			_snap_preview_to_area(valid_area)
+		else:
+			building_preview.global_position = mouse_pos
+			
+func _find_closest_valid_area(mouse_pos: Vector2) -> ConstructionArea:
+	var building_data = buildings.get(selected_building_id, {})
+	var allowed_types = building_data.get("allowed_area_types", [])
+	var snap_distance = 150  # Aumentar distancia para test
+	
+	for area in construction_areas:
+		if not area.is_occupied and area.area_type in allowed_types:
+			var distance = area.global_position.distance_to(mouse_pos)
+			if distance < snap_distance:
+				return area
+	
+	return null
 		
 func _on_menu_button_pressed(menu_index: int) -> void:
 	_toggle_menu(menu_index)
@@ -188,6 +209,7 @@ func _input(event: InputEvent) -> void:
 		if event.is_action_pressed("cancel_construction"):
 			_cancel_building_mode()
 
+
 func _toggle_construction_menu() -> void: 
 	visible = !visible
 	
@@ -205,38 +227,51 @@ func _start_building_mode(building_id: String) -> void:
 	# TODO: animación cuando selecciono el edificio 
 	#$VBoxContainer.modulate.a = 0.8
 	visible = false
-	
 	_show_all_available_areas()
 	_create_building_preview(building_id)
 	
 	print ("Modo construcción para: " + building_id)
 
 func _show_all_available_areas() -> void: 
-	for area in construction_areas: 
-		if not area.is_occupied: 
+	var building_data = buildings.get(selected_building_id, {})
+	var allowed_types = building_data.get("allowed_area_types", [])
+	
+	print("Edificio seleccionado: ", selected_building_id)
+	print("Tipos permitidos: ", allowed_types)
+	
+	for area in construction_areas:
+		print("Área: ", area.name, " - Tipo: ", area.area_type, " - Ocupada: ", area.is_occupied)
+		
+		if not area.is_occupied and area.area_type in allowed_types:
 			area.show_highlight()
-			print("Mostrando área disponible")
+			print("Mostrando área compatible: " + str(area.name))
+		else:
+			print("Área no compatible o ocupada: " + str(area.name))
 
 func _create_building_preview(building_id: String) -> void: 
 	if building_preview: 
 		building_preview.queue_redraw()
 		building_preview = null
-		
-	building_preview = Sprite2D.new()
+	
+	building_preview = Node2D.new()
 	
 	#TODO: mapear cada building a su textura correspondiente
 	
+	var sprite = Sprite2D.new()
 	var building_data = buildings.get(building_id, {})
 	var texture_path = building_data.get("texture_path", "")
 	if texture_path != "":
-		building_preview.texture = load(texture_path)
+		sprite.texture = load(texture_path)
 	
-	building_preview.modulate.a = 0.8
+	sprite.modulate.a = 0.7
+	sprite.scale = Vector2(0.5, 0.5)
+	
+	# Añadir sprite como hijo del Node2D
+	building_preview.add_child(sprite)
 	building_preview.z_index = 100
-	building_preview.scale = Vector2(0.25, 0.25)
 	
 	var scene_manager = get_tree().get_first_node_in_group("scene_manager")
-	if not scene_manager: 
+	if not scene_manager:
 		scene_manager = get_parent().get_parent()
 	
 	scene_manager.add_child(building_preview)
@@ -277,3 +312,16 @@ func _show_tooltip(description: String, button: TextureButton) -> void:
 	
 	tooltip.position.x = button_global_pos.x
 	tooltip.position.y = button_global_pos.y - tooltip.size.y - 30
+
+func _snap_preview_to_area(area: ConstructionArea) -> void:
+	if building_preview and area:
+		print("=== SNAP DEBUG ===")
+		print("Área posición: ", area.global_position)
+		print("Área center_position: ", area.center_position)
+		print("Preview antes: ", building_preview.global_position)
+		
+		building_preview.global_position = area.global_position + area.center_position
+		building_preview.rotation = area.rotation
+		
+		print("Preview después: ", building_preview.global_position)
+		print("Preview visible: ", building_preview.visible)

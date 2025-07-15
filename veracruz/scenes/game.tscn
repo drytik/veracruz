@@ -1011,11 +1011,25 @@ vertical_alignment = 1
 autowrap_mode = 3
 
 [node name="CitySprite" type="Sprite2D" parent="SceneManager/CityScene"]
+position = Vector2(-9, 0)
 scale = Vector2(0.5, 0.5)
 texture = ExtResource("1_uwrxv")
 centered = false
 
 [node name="ConstructionAreas" type="Node2D" parent="SceneManager/CityScene/CitySprite"]
+
+[node name="AreaWall" type="Node2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas"]
+
+[node name="AreaWall" type="Area2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/AreaWall"]
+script = ExtResource("4_p57ef")
+area_type = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/AreaWall/AreaWall"]
+position = Vector2(588, 618)
+rotation = 0.526688
+scale = Vector2(8.64249, -11.3975)
+skew = 0.523599
+shape = SubResource("RectangleShape2D_80nbo")
 
 [node name="Area2x1_1" type="Node2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas"]
 
@@ -1053,16 +1067,146 @@ scale = Vector2(8.642, -11.398)
 skew = -0.523599
 shape = SubResource("RectangleShape2D_80nbo")
 
-[node name="AreaWall" type="Node2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas"]
+[node name="Area2x2_1" type="Node2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas"]
 
-[node name="Area2x1" type="Area2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/AreaWall"]
+[node name="Area2x2" type="Area2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/Area2x2_1"]
 script = ExtResource("4_p57ef")
 area_type = 1
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/AreaWall/Area2x1"]
-position = Vector2(588, 618)
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/Area2x2_1/Area2x2"]
+position = Vector2(1016, 850)
 rotation = 0.526688
-scale = Vector2(8.64249, -11.3975)
+scale = Vector2(17.284, -11.398)
+skew = 0.523599
+shape = SubResource("RectangleShape2D_80nbo")
+
+[node name="Area2x2_2" type="Node2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas"]
+
+[node name="Area2x2" type="Area2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/Area2x2_2"]
+script = ExtResource("4_p57ef")
+area_type = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/Area2x2_2/Area2x2"]
+position = Vector2(1888, 776)
+rotation = 0.526688
+scale = Vector2(17.284, -11.398)
+skew = 0.523599
+shape = SubResource("RectangleShape2D_80nbo")
+
+[node name="Area2x2_3" type="Node2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas"]
+
+[node name="Area2x2" type="Area2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/Area2x2_3"]
+script = ExtResource("4_p57ef")
+area_type = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/Area2x2_3/Area2x2"]
+position = Vector2(516, 1710)
+rotation = 0.526688
+scale = Vector2(17.284, -11.398)
+skew = 0.523599
+shape = SubResource("RectangleShape2D_80nbo")
+
+[node name="AreaWorkshop_1" type="Node2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas"]
+
+[node name="AreaWorkshop" type="Area2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/AreaWorkshop_1"]
+script = ExtResource("4_p57ef")
+area_type = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/AreaWorkshop_1/AreaWorkshop"]
+position = Vector2(898, 1352)
+rotation = 0.526688
+scale = Vector2(17.284, -11.398)
+skew = 0.523599
+shape = SubResource("RectangleShape2D_80nbo")
+
+[node name="AreaWorkshop_2" type="Node2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas"]
+
+[node name="AreaWorkshop" type="Area2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/AreaWorkshop_2"]
+script = ExtResource("4_p57ef")
+area_type = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/AreaWorkshop_2/AreaWorkshop"]
+position = Vector2(516, 1138)
+rotation = 0.526688
+scale = Vector2(17.284, -11.398)
+skew = 0.523599
+shape = SubResource("RectangleShape2D_80nbo")
+
+[node name="AreaWorkshop_3" type="Node2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas"]
+
+[node name="AreaWorkshop" type="Area2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/AreaWorkshop_3"]
+script = ExtResource("4_p57ef")
+area_type = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/AreaWorkshop_3/AreaWorkshop"]
+position = Vector2(3252, 746)
+rotation = 0.526688
+scale = Vector2(17.284, -11.398)
+skew = 0.523599
+shape = SubResource("RectangleShape2D_80nbo")
+
+[node name="AreaWorkshop_4" type="Node2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas"]
+
+[node name="AreaWorkshop" type="Area2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/AreaWorkshop_4"]
+script = ExtResource("4_p57ef")
+area_type = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/AreaWorkshop_4/AreaWorkshop"]
+position = Vector2(3226, 1150)
+rotation = 0.526688
+scale = Vector2(17.284, -11.398)
+skew = 0.523599
+shape = SubResource("RectangleShape2D_80nbo")
+
+[node name="AreaWorkshop_5" type="Node2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas"]
+
+[node name="AreaWorkshop" type="Area2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/AreaWorkshop_5"]
+script = ExtResource("4_p57ef")
+area_type = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/AreaWorkshop_5/AreaWorkshop"]
+position = Vector2(1014, 1856)
+rotation = 0.526688
+scale = Vector2(17.284, -11.398)
+skew = 0.523599
+shape = SubResource("RectangleShape2D_80nbo")
+
+[node name="Area3x2_1" type="Node2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas"]
+
+[node name="Area3x2" type="Area2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/Area3x2_1"]
+script = ExtResource("4_p57ef")
+area_type = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/Area3x2_1/Area3x2"]
+position = Vector2(2572, 884)
+rotation = 0.526688
+scale = Vector2(25.926, -11.398)
+skew = 0.523599
+shape = SubResource("RectangleShape2D_80nbo")
+
+[node name="Area3x2_2" type="Node2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas"]
+
+[node name="Area3x2" type="Area2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/Area3x2_2"]
+script = ExtResource("4_p57ef")
+area_type = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/Area3x2_2/Area3x2"]
+position = Vector2(2072, 1242)
+rotation = -0.527089
+scale = Vector2(25.926, -11.398)
+skew = -0.523599
+shape = SubResource("RectangleShape2D_80nbo")
+
+[node name="AreaPort" type="Node2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas"]
+
+[node name="AreaPort" type="Area2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/AreaPort"]
+script = ExtResource("4_p57ef")
+area_type = 5
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/AreaPort/AreaPort"]
+position = Vector2(2370, 1646)
+rotation = 0.526688
+scale = Vector2(17.284, -11.398)
 skew = 0.523599
 shape = SubResource("RectangleShape2D_80nbo")
 

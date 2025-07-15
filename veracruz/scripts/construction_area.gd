@@ -3,57 +3,53 @@ extends Area2D
 
 enum TYPE {
 	x2x1, 
+	x2x2,
+	x3x2, 
 	WALL, 
-	WAREHOUSE
+	WORKSHOP,
+	PORT
 }
 
-@export_enum("x2x1", "WALL", "WAREHOUSE")
+@export_enum("x2x1", "x2x2", "x3x2", "WALL", "WORKSHOP", "PORT")
 var area_type : int
 @export var center_position : Vector2 = Vector2.ZERO
 @export var is_occupied : bool = false
 
-var highlight_shape: ColorRect
+var highlight_shape: Node2D
 
 func _ready() -> void:
 	add_to_group("construction_areas")
 	_create_highlight()
 	
+	
 func _create_highlight() -> void: 
-	highlight_shape = ColorRect.new()
-	highlight_shape.color = Color(1.0, 1.0, 1.0, 0.3)
-	highlight_shape.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	highlight_shape.visible = false 
-	
-	add_child(highlight_shape)
-	_adjust_highlight_size()
-	
-func _adjust_highlight_size() -> void: 
-	var collision_shape: CollisionShape2D = get_node("CollisionShape2D")
-	if collision_shape and collision_shape.shape: 
-		var shape = collision_shape.shape
-		var shape_size: Vector2
+	# Duplicar el CollisionShape2D existente
+	var collision_shape = get_node("CollisionShape2D")
+	if collision_shape:
+		highlight_shape = collision_shape.duplicate()
 		
-		if shape is RectangleShape2D:
-			var base_size = shape.size
-			var final_size = Vector2(
-				abs(base_size.x * collision_shape.scale.x),
-				abs(base_size.y * collision_shape.scale.y)
-			) 
-
-
-			var shape_pos = collision_shape.position
+		# Convertir a visual con Polygon2D
+		var polygon = Polygon2D.new()
+		polygon.color = Color(1.0, 1.0, 1.0, 0.3)
 		
-			highlight_shape.size = final_size
-			highlight_shape.position = shape_pos - (final_size / 2)
-			highlight_shape.rotation = collision_shape.rotation
+		# Si es RectangleShape2D, crear el polígono
+		if collision_shape.shape is RectangleShape2D:
+			var size = collision_shape.shape.size
+			var points = PackedVector2Array([
+				Vector2(-size.x/2, -size.y/2),
+				Vector2(size.x/2, -size.y/2), 
+				Vector2(size.x/2, size.y/2),
+				Vector2(-size.x/2, size.y/2)
+			])
+			polygon.polygon = points
 		
-			print("Área: ", name)
-			#print("Size final: ", final_size)
-			print("Position: ", highlight_shape.position)
+		# Limpiar el highlight duplicado y añadir el polígono
+		for child in highlight_shape.get_children():
+			child.queue_free()
 		
-	else: 
-		highlight_shape.size = Vector2(100, 100)
-		highlight_shape.position = collision_shape.position - Vector2(50, 50)
+		highlight_shape.add_child(polygon)
+		highlight_shape.visible = false
+		add_child(highlight_shape)
 		
 func show_highlight() -> void: 
 	if not is_occupied: 
