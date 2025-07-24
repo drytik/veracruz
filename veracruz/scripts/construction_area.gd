@@ -31,7 +31,6 @@ func _create_highlight() -> void:
 		# Convertir a visual con Polygon2D
 		var polygon = Polygon2D.new()
 		polygon.color = Color(1.0, 1.0, 1.0, 0.3)
-		
 		# Si es RectangleShape2D, crear el polígono
 		if collision_shape.shape is RectangleShape2D:
 			var size = collision_shape.shape.size
@@ -42,6 +41,7 @@ func _create_highlight() -> void:
 				Vector2(-size.x/2, size.y/2)
 			])
 			polygon.polygon = points
+			polygon.z_index = 1
 		
 		# Limpiar el highlight duplicado y añadir el polígono
 		for child in highlight_shape.get_children():
@@ -49,6 +49,7 @@ func _create_highlight() -> void:
 		
 		highlight_shape.add_child(polygon)
 		highlight_shape.visible = false
+		highlight_shape.z_index = 1
 		add_child(highlight_shape)
 		
 func show_highlight() -> void: 

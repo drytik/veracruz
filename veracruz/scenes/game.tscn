@@ -1204,6 +1204,7 @@ script = ExtResource("4_p57ef")
 area_type = 5
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="SceneManager/CityScene/CitySprite/ConstructionAreas/AreaPort/AreaPort"]
+z_index = 2
 position = Vector2(2370, 1646)
 rotation = 0.526688
 scale = Vector2(17.284, -11.398)

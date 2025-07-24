@@ -163,7 +163,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void: 
 	if current_state == BuildingState.BUILDING and building_preview:
-		var mouse_pos = get_viewport().get_mouse_position()
+		var mouse_pos = city_scene.get_global_mouse_position()
 		var valid_area = _find_closest_valid_area(mouse_pos)
 		
 		if valid_area:
@@ -175,15 +175,25 @@ func _process(delta: float) -> void:
 func _find_closest_valid_area(mouse_pos: Vector2) -> ConstructionArea:
 	var building_data = buildings.get(selected_building_id, {})
 	var allowed_types = building_data.get("allowed_area_types", [])
-	var snap_distance = 150  # Aumentar distancia para test
+	var closest_area = null
+	var min_distance = 100.0  # distancia máxima para snap
 	
-	for area in construction_areas:
+	var areas = get_tree().get_nodes_in_group("construction_areas")
+	for area in areas:
 		if not area.is_occupied and area.area_type in allowed_types:
-			var distance = area.global_position.distance_to(mouse_pos)
-			if distance < snap_distance:
-				return area
+			# Convertir mouse_pos a coordenadas locales del área
+			var local_pos = area.to_local(mouse_pos)
+			var collision_shape = area.get_node("CollisionShape2D")
+			
+			if collision_shape and collision_shape.shape is RectangleShape2D:
+				var rect = Rect2(-collision_shape.shape.size/2, collision_shape.shape.size)
+				if rect.has_point(local_pos):
+					var distance = area.global_position.distance_to(mouse_pos)
+					if distance < min_distance:
+						min_distance = distance
+						closest_area = area
 	
-	return null
+	return closest_area
 		
 func _on_menu_button_pressed(menu_index: int) -> void:
 	_toggle_menu(menu_index)
@@ -268,7 +278,6 @@ func _create_building_preview(building_id: String) -> void:
 	
 	# Añadir sprite como hijo del Node2D
 	building_preview.add_child(sprite)
-	building_preview.z_index = 100
 	
 	var scene_manager = get_tree().get_first_node_in_group("scene_manager")
 	if not scene_manager:
