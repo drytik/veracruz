@@ -19,9 +19,25 @@ var highlight_shape: Node2D
 
 func _ready() -> void:
 	add_to_group("construction_areas")
+	
+	# Configurar collision layers
+	collision_layer = 4
+	collision_mask = 2
+	
+	# NO calcular center_position aquí, lo haremos dinámicamente
 	_create_highlight()
-	
-	
+func get_global_center() -> Vector2:
+	var collision_shape = get_node("CollisionShape2D")
+	if collision_shape:
+		# Obtener la posición global del CollisionShape2D
+		var center = collision_shape.global_position
+		
+		# Compensar por la escala del CitySprite (0.5, 0.5)
+		# El offset visual puede necesitar ajuste manual
+		var offset_correction = Vector2(0, -50)  # Ajusta este valor según necesites
+		
+		return center + offset_correction
+	return global_position
 func _create_highlight() -> void: 
 	# Duplicar el CollisionShape2D existente
 	var collision_shape = get_node("CollisionShape2D")
@@ -51,11 +67,8 @@ func _create_highlight() -> void:
 		highlight_shape.visible = false
 		highlight_shape.z_index = 1
 		add_child(highlight_shape)
-		
 func show_highlight() -> void: 
 	if not is_occupied: 
-		highlight_shape.visible = true
-		
+		highlight_shape.visible = true	
 func hide_highlight() -> void: 
 	highlight_shape.visible = false
-	
