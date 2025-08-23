@@ -161,35 +161,7 @@ func _ready() -> void:
 			
 	button1.connect("pressed", _on_menu_button_pressed.bind(0))
 	button2.connect("pressed", _on_menu_button_pressed.bind(1))
-func _process(delta: float) -> void: 
-	if current_state == BuildingState.BUILDING and building_preview:
-		var mouse_pos = city_scene.get_global_mouse_position()
-		
-		# Si ya estamos snapped, verificar si debemos soltar el snap
-		if is_snapped and current_hover_area:
-			var area_center = current_hover_area.get_global_center()
-			var distance_to_area = mouse_pos.distance_to(area_center)
-			
-			if distance_to_area > snap_distance_threshold:
-				# Soltar el snap si nos alejamos mucho
-				is_snapped = false
-				current_hover_area.show_highlight()  # Mostrar highlight de nuevo
-				current_hover_area = null
-				building_preview.global_position = mouse_pos
-			else:
-				# Mantener el snap
-				_snap_preview_to_area(current_hover_area)
-		elif current_hover_area:
-			# Primera vez que hacemos snap
-			is_snapped = true
-			current_hover_area.hide_highlight()  # Ocultar highlight al hacer snap
-			_snap_preview_to_area(current_hover_area)
-		else:
-			# No hay área cerca, seguir el mouse
-			is_snapped = false
-			building_preview.global_position = mouse_pos
-func _on_menu_button_pressed(menu_index: int) -> void:
-	_toggle_menu(menu_index)
+
 func _toggle_menu(menu_index: int) -> void:
 	
 	var menu1 = $VBoxContainer/HBoxContainer/PanelContainer
@@ -201,6 +173,9 @@ func _toggle_menu(menu_index: int) -> void:
 	else:
 		menu1.visible = false
 		menu2.visible = true
+		
+func _on_menu_button_pressed(menu_index: int) -> void:
+	_toggle_menu(menu_index)
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("construction_menu"):
 		if city_scene and city_scene.visible and current_state == BuildingState.NORMAL:
@@ -209,6 +184,57 @@ func _input(event: InputEvent) -> void:
 	if city_scene and city_scene.visible and current_state == BuildingState.BUILDING:
 		if event.is_action_pressed("cancel_construction"):
 			_cancel_building_mode()
+		elif event.is_action_pressed("ui_accept") or (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed):
+			_try_place_building()
+
+func _try_place_building() -> void: 
+		# Solo construir si estamos en snap con un área válida
+	if is_snapped and current_hover_area and not current_hover_area.is_occupied:
+		# Obtener datos del edificio
+		var building_data = buildings.get(selected_building_id, {})
+		var texture_path = building_data.get("texture_path", "")
+		
+		# Crear el edificio real
+		var new_building = Node2D.new()
+		new_building.name = selected_building_id + "_" + str(Time.get_ticks_msec())
+		
+		# Añadir sprite al edificio
+		var sprite = Sprite2D.new()
+		if texture_path != "":
+			sprite.texture = load(texture_path)
+		sprite.scale = Vector2(0.5, 0.5)
+		new_building.add_child(sprite)
+		
+		# Posicionar el edificio donde está el preview
+		new_building.global_position = building_preview.global_position
+		new_building.rotation = building_preview.rotation
+		
+		# Añadir el edificio a la escena
+		city_scene.add_child(new_building)
+		
+		# Marcar el área como ocupada
+		current_hover_area.is_occupied = true
+		current_hover_area.hide_highlight()
+		
+		# Guardar referencia del edificio en el área (opcional, útil para futuro)
+		current_hover_area.set_meta("building", new_building)
+		
+		# Reset para poder construir otro
+		is_snapped = false
+		current_hover_area = null
+		
+		# Actualizar las áreas disponibles (ocultar las ocupadas)
+		_update_available_areas()
+		
+func _update_available_areas() -> void:
+	var building_data = buildings.get(selected_building_id, {})
+	var allowed_types = building_data.get("allowed_area_types", [])
+	
+	for area in construction_areas:
+		if not area.is_occupied and area.area_type in allowed_types:
+			area.show_highlight()
+		else:
+			area.hide_highlight()
 func _toggle_construction_menu() -> void: 
 	visible = !visible
 func _on_building_selected(building_key: String) -> void:
@@ -271,12 +297,17 @@ func _create_building_preview(building_id: String) -> void:
 	
 	scene_manager.add_child(building_preview)
 func _on_preview_entered_area(area: Area2D) -> void:
-	if area is ConstructionArea and not is_snapped:  # Solo si no estamos ya snapped
+	if area is ConstructionArea and not is_snapped:
 		var construction_area = area as ConstructionArea
+		
+		# No hacer snap en áreas ocupadas
+		if construction_area.is_occupied:
+			return
+			
 		var building_data = buildings.get(selected_building_id, {})
 		var allowed_types = building_data.get("allowed_area_types", [])
 		
-		if not construction_area.is_occupied and construction_area.area_type in allowed_types:
+		if construction_area.area_type in allowed_types:
 			current_hover_area = construction_area
 func _on_preview_exited_area(area: Area2D) -> void:
 	pass
