@@ -162,6 +162,49 @@ func _ready() -> void:
 	button1.connect("pressed", _on_menu_button_pressed.bind(0))
 	button2.connect("pressed", _on_menu_button_pressed.bind(1))
 
+func _process(delta: float) -> void: 
+	if current_state == BuildingState.BUILDING and building_preview:
+		var mouse_pos = city_scene.get_global_mouse_position()
+		
+		# Si ya estamos snapped, verificar si debemos soltar el snap
+		if is_snapped and current_hover_area:
+			var area_center = current_hover_area.get_global_center()
+			var distance_to_area = mouse_pos.distance_to(area_center)
+			
+			if distance_to_area > snap_distance_threshold:
+				# Soltar el snap si nos alejamos mucho
+				is_snapped = false
+				current_hover_area.show_highlight()
+				current_hover_area = null
+				building_preview.global_position = mouse_pos
+				
+				# Restaurar color del preview
+				var sprite = building_preview.get_node("SpritePreview")
+				if sprite:
+					sprite.modulate = Color(1, 0.5, 0.5, 0.7)  # Rojizo = no válido
+			else:
+				# Mantener el snap
+				_snap_preview_to_area(current_hover_area)
+		elif current_hover_area:
+			# Primera vez que hacemos snap
+			is_snapped = true
+			current_hover_area.hide_highlight()
+			_snap_preview_to_area(current_hover_area)
+			
+			# Cambiar color para indicar posición válida
+			var sprite = building_preview.get_node("SpritePreview")
+			if sprite:
+				sprite.modulate = Color(0.5, 1, 0.5, 0.9)  # Verde = válido para construir
+		else:
+			# No hay área cerca, seguir el mouse
+			is_snapped = false
+			building_preview.global_position = mouse_pos
+			
+			# Indicar que no se puede construir aquí
+			var sprite = building_preview.get_node("SpritePreview")
+			if sprite:
+				sprite.modulate = Color(1, 0.5, 0.5, 0.7)  # Rojizo = no válido
+
 func _toggle_menu(menu_index: int) -> void:
 	
 	var menu1 = $VBoxContainer/HBoxContainer/PanelContainer
@@ -173,22 +216,34 @@ func _toggle_menu(menu_index: int) -> void:
 	else:
 		menu1.visible = false
 		menu2.visible = true
-		
+
 func _on_menu_button_pressed(menu_index: int) -> void:
 	_toggle_menu(menu_index)
+
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("construction_menu"):
 		if city_scene and city_scene.visible and current_state == BuildingState.NORMAL:
 			_toggle_construction_menu()
 			
+	if event.is_action_pressed("ui_cancel"):  # ESC
+		if city_scene and city_scene.visible:
+			if current_state == BuildingState.NORMAL and visible:
+				# Cerrar el menú si está abierto
+				visible = false
+			elif current_state == BuildingState.BUILDING:
+				# Volver al menú si estamos construyendo
+				_exit_building_mode_to_menu()
+			
 	if city_scene and city_scene.visible and current_state == BuildingState.BUILDING:
 		if event.is_action_pressed("cancel_construction"):
-			_cancel_building_mode()
+			_exit_building_mode_to_menu()
+		elif event.is_action_pressed("ui_cancel"):  # ESC
+			_exit_building_mode_to_menu()
 		elif event.is_action_pressed("ui_accept") or (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed):
 			_try_place_building()
 
 func _try_place_building() -> void: 
-		# Solo construir si estamos en snap con un área válida
+	# Solo construir si estamos en snap con un área válida
 	if is_snapped and current_hover_area and not current_hover_area.is_occupied:
 		# Obtener datos del edificio
 		var building_data = buildings.get(selected_building_id, {})
@@ -219,13 +274,16 @@ func _try_place_building() -> void:
 		# Guardar referencia del edificio en el área (opcional, útil para futuro)
 		current_hover_area.set_meta("building", new_building)
 		
-		# Reset para poder construir otro
-		is_snapped = false
-		current_hover_area = null
-		
-		# Actualizar las áreas disponibles (ocultar las ocupadas)
-		_update_available_areas()
-		
+		# Limpiar el preview y volver al menú
+		_exit_building_mode_to_menu()
+
+func _exit_building_mode_to_menu() -> void:
+	# Limpiar el modo construcción
+	_cleanup_building_mode()
+	
+	# Mantener el menú abierto
+	visible = true
+
 func _update_available_areas() -> void:
 	var building_data = buildings.get(selected_building_id, {})
 	var allowed_types = building_data.get("allowed_area_types", [])
@@ -235,13 +293,16 @@ func _update_available_areas() -> void:
 			area.show_highlight()
 		else:
 			area.hide_highlight()
+
 func _toggle_construction_menu() -> void: 
 	visible = !visible
+
 func _on_building_selected(building_key: String) -> void:
 	var building_data = buildings.get(building_key, null)
 	if building_data:
 		_start_building_mode(building_key)
 	emit_signal("building_selected")
+
 func _start_building_mode(building_id: String) -> void: 
 	current_state = BuildingState.BUILDING
 	selected_building_id = building_id
@@ -253,6 +314,7 @@ func _start_building_mode(building_id: String) -> void:
 	_create_building_preview(building_id)
 	
 	print ("Modo construcción para: " + building_id)
+
 func _show_all_available_areas() -> void: 
 	var building_data = buildings.get(selected_building_id, {})
 	var allowed_types = building_data.get("allowed_area_types", [])
@@ -260,6 +322,7 @@ func _show_all_available_areas() -> void:
 	for area in construction_areas:		
 		if not area.is_occupied and area.area_type in allowed_types:
 			area.show_highlight()
+
 func _create_building_preview(building_id: String) -> void: 
 	if building_preview: 
 		building_preview.queue_free()
@@ -296,6 +359,7 @@ func _create_building_preview(building_id: String) -> void:
 		scene_manager = get_parent().get_parent()
 	
 	scene_manager.add_child(building_preview)
+
 func _on_preview_entered_area(area: Area2D) -> void:
 	if area is ConstructionArea and not is_snapped:
 		var construction_area = area as ConstructionArea
@@ -309,34 +373,51 @@ func _on_preview_entered_area(area: Area2D) -> void:
 		
 		if construction_area.area_type in allowed_types:
 			current_hover_area = construction_area
+
 func _on_preview_exited_area(area: Area2D) -> void:
 	pass
+
 func _cancel_building_mode() -> void: 	
-	# Si estábamos en snap, mostrar el highlight de nuevo antes de ocultarlo
+	# Limpiar el modo construcción
+	_cleanup_building_mode()
+	
+	# Cerrar el menú completamente
+	visible = false
+
+func _cleanup_building_mode() -> void:
+	# Si estábamos en snap, mostrar el highlight de nuevo
 	if is_snapped and current_hover_area:
 		current_hover_area.show_highlight()
 	
+	# Limpiar el preview
+	if building_preview:
+		building_preview.queue_free()
+		building_preview = null
+	
+	# Resetear todas las variables
 	current_state = BuildingState.NORMAL
 	selected_building_id = ""
 	current_hover_area = null
 	is_snapped = false
 	
+	# Restaurar opacidad del menú
 	$VBoxContainer.modulate.a = 1.0
-	_hide_all_highlights()  # Esto ocultará todos los highlights
 	
-	visible = true
-	if building_preview: 
-		building_preview.queue_free()
-		building_preview = null
+	# Ocultar todos los highlights
+	_hide_all_highlights()
+
 func _hide_all_highlights() -> void: 
 	for area in construction_areas: 
-		area.hide_highlight()	
+		area.hide_highlight()
+
 func _on_building_hover(building_key: String, button: TextureButton) -> void: 
 	var building_data = buildings.get(building_key, null)
 	if building_data:
 		_show_tooltip(building_data["description"], button)
+
 func _on_building_hover_exit() -> void: 
 	tooltip.visible = false
+
 func _show_tooltip(description: String, button: TextureButton) -> void: 
 	tooltip.get_node("MarginContainer/Label").text = description
 	tooltip.visible = true
@@ -346,6 +427,7 @@ func _show_tooltip(description: String, button: TextureButton) -> void:
 	
 	tooltip.position.x = button_global_pos.x
 	tooltip.position.y = button_global_pos.y - tooltip.size.y - 30
+
 func _snap_preview_to_area(area: ConstructionArea) -> void:
 	if building_preview and area:
 		# Usar la posición global del centro directamente
@@ -353,3 +435,8 @@ func _snap_preview_to_area(area: ConstructionArea) -> void:
 		
 		building_preview.global_position = snap_position
 		building_preview.rotation = area.rotation
+		
+		# Asegurar que tiene color verde cuando está en snap
+		var sprite = building_preview.get_node("SpritePreview")
+		if sprite:
+			sprite.modulate = Color(0.5, 1, 0.5, 0.9)  # Verde = válido
