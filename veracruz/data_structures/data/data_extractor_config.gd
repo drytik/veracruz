@@ -4,7 +4,7 @@ extends Resource
 @export var name : String = "Extractor"
 @export var description : String = ""
 @export var resource_produced : String = "wood"
-@export var resource_display_name : String = "Madera"  # Cambiado de resource_name
+@export var resource_display_name : String = "Wood"  # Cambiado de resource_name
 
 @export_group("Production")
 @export var max_workers : Array[int] = [10, 20, 30, 40]  # Por nivel
