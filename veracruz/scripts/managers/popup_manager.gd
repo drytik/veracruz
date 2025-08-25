@@ -16,15 +16,25 @@ func _ready():
 	layer = 10  # Asegurar que está sobre todo
 
 func show_extractor_popup(zone_id: String, zone_type: String, level: int = 0):
+	print("Opening extractor popup for zone: %s, type: %s" % [zone_id, zone_type])
 	close_current_popup()
 	
 	# Crear el popup (por ahora programáticamente, luego con .tscn)
 	var popup = _create_extractor_popup()
 	popup.setup_zone(zone_id, zone_type, level)
 	
-	# Centrar en pantalla
+	# Añadir primero, luego posicionar
 	add_child(popup)
-	popup.position = (get_viewport().size - popup.size) / 2
+	
+	# Esperar un frame para que se calcule el tamaño
+	await get_tree().process_frame
+	
+	# Centrar en pantalla - FIX: Convertir a Vector2
+	var viewport_size = Vector2(get_viewport().size)
+	var popup_size = Vector2(popup.size)
+	popup.position = (viewport_size - popup_size) / 2
+	
+	print("Popup created at position: %s" % popup.position)
 	
 	# Conectar señales
 	popup.closed.connect(_on_popup_closed)
@@ -60,8 +70,10 @@ func _on_abandon_requested(zone_id: String):
 ## Crear popup programáticamente (temporal hasta hacer el .tscn)
 func _create_extractor_popup() -> ExtractorPopup:
 	var popup = ExtractorPopup.new()
+	popup.name = "ExtractorPopup"
 	
 	var margin = MarginContainer.new()
+	margin.name = "MarginContainer"
 	margin.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	margin.add_theme_constant_override("margin_left", 20)
 	margin.add_theme_constant_override("margin_right", 20)
@@ -70,10 +82,12 @@ func _create_extractor_popup() -> ExtractorPopup:
 	popup.add_child(margin)
 	
 	var vbox = VBoxContainer.new()
+	vbox.name = "VBoxContainer"
 	margin.add_child(vbox)
 	
 	# Header
 	var header = HBoxContainer.new()
+	header.name = "Header"
 	vbox.add_child(header)
 	
 	var title = Label.new()
@@ -104,7 +118,7 @@ func _create_extractor_popup() -> ExtractorPopup:
 	
 	vbox.add_child(HSeparator.new())
 	
-	# Workers section
+	# Workers section - IMPORTANTE: Mantener la estructura de nombres
 	var workers_section = VBoxContainer.new()
 	workers_section.name = "WorkersSection"
 	vbox.add_child(workers_section)
@@ -142,5 +156,7 @@ func _create_extractor_popup() -> ExtractorPopup:
 	abandon.name = "AbandonButton"
 	abandon.text = "Abandonar"
 	buttons.add_child(abandon)
+	
+	print("Popup structure created with slider at: MarginContainer/VBoxContainer/WorkersSection/WorkersSlider")
 	
 	return popup

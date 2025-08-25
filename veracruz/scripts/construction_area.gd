@@ -18,32 +18,34 @@ enum TYPE {
 
 # Metadata para extractores (WorldMap)
 @export var is_extractor_zone : bool = false
-@export_enum("empty", "lumbermill", "quarry", "plantation") var extractor_type : String = ""  # Lista desplegable
+@export_enum("lumbermill", "quarry", "plantation") var extractor_type : String = "lumbermill"  # Lista desplegable con valor por defecto
 @export var available_resources : Array[String] = []  # ["wood"] o ["stone", "silver"]
 
 var highlight_shape: Node2D
 var zone_id : String = ""  # ID único para save/load
 
 func _ready() -> void:
-	add_to_group("construction_areas")
-	
 	# Configurar collision layers
-	collision_layer = 4
-	collision_mask = 2
+	collision_layer = 1  # Layer 1 para áreas
+	collision_mask = 1   # Mask 1
 	
-	# Generar ID único si es zona de extractor
+	# Añadir a grupos según tipo
 	if is_extractor_zone:
+		add_to_group("world_extractor_zones")
 		zone_id = extractor_type + "_" + str(get_instance_id())
-		add_to_group("extractor_zones")
+	else:
+		add_to_group("city_construction_areas")
 	
 	# NO calcular center_position aquí, lo haremos dinámicamente
 	_create_highlight()
 	
 	# Hacer clickeable
 	input_pickable = true
+	
+	# Conectar señales
+	input_event.connect(_on_input_event)
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
-	input_event.connect(_on_input_event)
 
 func get_global_center() -> Vector2:
 	var collision_shape = get_node("CollisionShape2D")
@@ -59,41 +61,48 @@ func get_global_center() -> Vector2:
 	return global_position
 
 func _create_highlight() -> void:
+	# Esperar si el nodo no está listo
+	await get_tree().process_frame
+	
 	# Duplicar el CollisionShape2D existente
-	var collision_shape = get_node("CollisionShape2D")
-	if collision_shape:
-		highlight_shape = collision_shape.duplicate()
+	var collision_shape = get_node_or_null("CollisionShape2D")
+	if not collision_shape:
+		print("Warning: No CollisionShape2D found for highlight")
+		return
 		
-		# Convertir a visual con Polygon2D
-		var polygon = Polygon2D.new()
-		polygon.color = Color(1.0, 1.0, 1.0, 0.3)
-		# Si es RectangleShape2D, crear el polígono
-		if collision_shape.shape is RectangleShape2D:
-			var size = collision_shape.shape.size
-			var points = PackedVector2Array([
-				Vector2(-size.x/2, -size.y/2),
-				Vector2(size.x/2, -size.y/2), 
-				Vector2(size.x/2, size.y/2),
-				Vector2(-size.x/2, size.y/2)
-			])
-			polygon.polygon = points
-			polygon.z_index = 1
-		
-		# Limpiar el highlight duplicado y añadir el polígono
-		for child in highlight_shape.get_children():
-			child.queue_free()
-		
-		highlight_shape.add_child(polygon)
-		highlight_shape.visible = false
-		highlight_shape.z_index = 1
-		add_child(highlight_shape)
+	highlight_shape = collision_shape.duplicate()
+	
+	# Convertir a visual con Polygon2D
+	var polygon = Polygon2D.new()
+	polygon.color = Color(1.0, 1.0, 1.0, 0.3)
+	# Si es RectangleShape2D, crear el polígono
+	if collision_shape.shape is RectangleShape2D:
+		var size = collision_shape.shape.size
+		var points = PackedVector2Array([
+			Vector2(-size.x/2, -size.y/2),
+			Vector2(size.x/2, -size.y/2), 
+			Vector2(size.x/2, size.y/2),
+			Vector2(-size.x/2, size.y/2)
+		])
+		polygon.polygon = points
+		polygon.z_index = 1
+	
+	# Limpiar el highlight duplicado y añadir el polígono
+	for child in highlight_shape.get_children():
+		child.queue_free()
+	
+	highlight_shape.add_child(polygon)
+	highlight_shape.visible = false
+	highlight_shape.z_index = 1
+	add_child(highlight_shape)
 
 func show_highlight() -> void:
-	if not is_occupied:
+	if not is_occupied and highlight_shape:
 		highlight_shape.visible = true
 
 func hide_highlight() -> void:
-	highlight_shape.visible = false
+	if highlight_shape:
+		highlight_shape.visible = false
 
 func _on_mouse_entered() -> void:
 	if is_extractor_zone and not is_occupied:
@@ -105,6 +114,9 @@ func _on_mouse_exited() -> void:
 func _on_input_event(viewport: Node, event: InputEvent, shape_idx: int) -> void:
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+			# Consumir el evento para evitar duplicados
+			get_viewport().set_input_as_handled()
+			
 			if is_extractor_zone:
 				# Abrir popup del extractor
 				_open_extractor_popup()

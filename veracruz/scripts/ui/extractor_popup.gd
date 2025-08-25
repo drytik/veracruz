@@ -28,7 +28,7 @@ var extractor_configs = {
 		"name": "Aserradero",
 		"description": "Produce madera de los bosques cercanos",
 		"resource": "wood",
-		"resource_name": "Madera",
+		"resource_display_name": "Madera",  # Cambiado
 		"max_workers": [10, 20, 30, 40],  # Por nivel
 		"base_production": [10, 20, 35, 50],  # Por nivel con max workers
 		"upgrade_cost": [
@@ -41,7 +41,7 @@ var extractor_configs = {
 		"name": "Cantera",
 		"description": "Extrae piedra y minerales",
 		"resource": "stone",  # Puede variar según la zona
-		"resource_name": "Piedra",
+		"resource_display_name": "Piedra",  # Cambiado
 		"max_workers": [15, 25, 35, 45],
 		"base_production": [8, 16, 28, 40],
 		"upgrade_cost": [
@@ -54,7 +54,7 @@ var extractor_configs = {
 		"name": "Plantación",
 		"description": "Cultiva productos agrícolas",
 		"resource": "corn",  # Puede variar
-		"resource_name": "Maíz",
+		"resource_display_name": "Maíz",  # Cambiado
 		"max_workers": [20, 30, 40, 50],
 		"base_production": [15, 30, 45, 65],
 		"upgrade_cost": [
@@ -66,54 +66,52 @@ var extractor_configs = {
 }
 
 func _ready():
-	# Obtener referencias a los nodos creados
-	_get_node_references()
-	
-	# Conectar botones si existen
-	if close_button:
-		close_button.pressed.connect(_on_close_pressed)
-	if workers_slider:
-		workers_slider.value_changed.connect(_on_workers_changed)
-	if upgrade_button:
-		upgrade_button.pressed.connect(_on_upgrade_pressed)
-	if abandon_button:
-		abandon_button.pressed.connect(_on_abandon_pressed)
+	# NO llamar _get_node_references aquí porque aún no está en el árbol
+	# Se llamará desde setup_zone después de ser añadido
 	
 	# Centrar en pantalla
 	custom_minimum_size = Vector2(400, 500)
 
 func _get_node_references():
-	# Buscar los nodos por su path
+	# NO usar await aquí
+	# Buscar los nodos por su path correcto
 	var base_path = "MarginContainer/VBoxContainer/"
 	
 	# Intentar obtener las referencias
-	if has_node(base_path + "Header/TitleLabel"):
-		title_label = get_node(base_path + "Header/TitleLabel")
-	if has_node(base_path + "Header/CloseButton"):
-		close_button = get_node(base_path + "Header/CloseButton")
-	if has_node(base_path + "DescriptionLabel"):
-		description_label = get_node(base_path + "DescriptionLabel")
-	if has_node(base_path + "ResourceLabel"):
-		resource_label = get_node(base_path + "ResourceLabel")
-	if has_node(base_path + "WorkersSection/WorkersLabel"):
-		workers_label = get_node(base_path + "WorkersSection/WorkersLabel")
-	if has_node(base_path + "WorkersSection/WorkersSlider"):
-		workers_slider = get_node(base_path + "WorkersSection/WorkersSlider")
-	if has_node(base_path + "ProductionLabel"):
-		production_label = get_node(base_path + "ProductionLabel")
-	if has_node(base_path + "ButtonsContainer/UpgradeButton"):
-		upgrade_button = get_node(base_path + "ButtonsContainer/UpgradeButton")
-	if has_node(base_path + "ButtonsContainer/AbandonButton"):
-		abandon_button = get_node(base_path + "ButtonsContainer/AbandonButton")
+	title_label = get_node_or_null(base_path + "Header/TitleLabel")
+	close_button = get_node_or_null(base_path + "Header/CloseButton")
+	description_label = get_node_or_null(base_path + "DescriptionLabel")
+	resource_label = get_node_or_null(base_path + "ResourceLabel")
+	workers_label = get_node_or_null(base_path + "WorkersSection/WorkersLabel")
+	workers_slider = get_node_or_null(base_path + "WorkersSection/WorkersSlider")
+	production_label = get_node_or_null(base_path + "ProductionLabel")
+	upgrade_button = get_node_or_null(base_path + "ButtonsContainer/UpgradeButton")
+	abandon_button = get_node_or_null(base_path + "ButtonsContainer/AbandonButton")
+	
+	# Conectar señales si los nodos existen
+	if close_button:
+		close_button.pressed.connect(_on_close_pressed)
+	if workers_slider:
+		workers_slider.value_changed.connect(_on_workers_changed)
+		print("Slider connected successfully")
+	else:
+		print("ERROR: Slider not found")
+	if upgrade_button:
+		upgrade_button.pressed.connect(_on_upgrade_pressed)
+	if abandon_button:
+		abandon_button.pressed.connect(_on_abandon_pressed)
 	
 func setup_zone(zone_id: String, zone_type: String, level: int = 0):
 	current_zone_id = zone_id
 	current_zone_type = zone_type
 	current_level = level
 	
-	# Asegurarse de tener las referencias
-	if not title_label:
-		_get_node_references()
+	# Obtener referencias DESPUÉS de ser añadido al árbol
+	call_deferred("_setup_zone_deferred", zone_id, zone_type, level)
+
+func _setup_zone_deferred(zone_id: String, zone_type: String, level: int):
+	# Ahora sí obtener las referencias
+	_get_node_references()
 	
 	var config = extractor_configs.get(zone_type, {})
 	if config.is_empty():
@@ -126,7 +124,7 @@ func setup_zone(zone_id: String, zone_type: String, level: int = 0):
 	if description_label:
 		description_label.text = config.description
 	if resource_label:
-		resource_label.text = "Produce: " + config.resource_name
+		resource_label.text = "Produce: " + config.resource_display_name  # Cambiado
 	
 	# Configurar workers
 	max_workers = config.max_workers[level]
@@ -175,22 +173,58 @@ func _update_production_label(workers: int):
 	if max_workers > 0:
 		actual_production = int(max_production * float(workers) / float(max_workers))
 	
-	production_label.text = "Producción: %d %s/mes" % [actual_production, config.resource_name]
+	production_label.text = "Producción: %d %s/mes" % [actual_production, config.resource_display_name]  # Cambiado
 
 func _on_close_pressed():
 	emit_signal("closed")
 	queue_free()
 
 func _on_workers_changed(value: float):
+	print("Slider changed to: %f" % value)
 	var new_workers = int(value)
+	
+	# Si es la primera vez que se asignan workers, crear el extractor
+	if new_workers > 0:
+		_ensure_extractor_exists()
+	
 	if WorkerManager.ref.assign_workers(current_zone_id, new_workers):
+		print("Workers assigned: %d" % new_workers)
 		_update_workers_label(new_workers)
 		_update_production_label(new_workers)
 		emit_signal("workers_changed", current_zone_id, new_workers)
 	else:
+		print("Failed to assign workers")
 		# Revertir slider si no hay suficientes workers
 		if workers_slider:
 			workers_slider.value = WorkerManager.ref.get_assigned_workers(current_zone_id)
+
+func _ensure_extractor_exists():
+	# Verificar si ya existe el extractor
+	var extractors = get_tree().get_nodes_in_group("extractors")
+	for extractor in extractors:
+		if extractor.extractor_id == current_zone_id:
+			return  # Ya existe
+	
+	# Crear nuevo extractor
+	var extractor = BaseExtractor.new()
+	extractor.extractor_id = current_zone_id
+	extractor.extractor_type = current_zone_type
+	extractor.current_level = current_level
+	
+	# Encontrar la zona para obtener la posición
+	var zones = get_tree().get_nodes_in_group("world_extractor_zones")
+	for zone in zones:
+		if zone.zone_id == current_zone_id:
+			extractor.position = zone.global_position
+			extractor.zone_area = zone
+			break
+	
+	# Añadir al WorldScene
+	var world_scene = get_node_or_null("/root/Game/SceneManager/WorldScene")
+	if world_scene:
+		world_scene.add_child(extractor)
+		extractor.activate()
+		print("Extractor created: %s at %s" % [current_zone_id, extractor.position])
 
 func _on_upgrade_pressed():
 	emit_signal("upgrade_requested", current_zone_id)

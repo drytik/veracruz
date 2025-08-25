@@ -19,85 +19,85 @@ var buildings: Dictionary = {
 		"name": "Tabern", 
 		"description": "Lugar de encuentro social donde los colonos se reúnen. Mejora el bienestar y la información comercial.",
 		"texture_path": "res://assets/buildings/Taberna_Lvl_1.png",
-		"allowed_area_types": ""
+		"allowed_area_types": []
 		}, 
 	"Lighthouse": {
 		"name": "Lighthouse", 
 		"description": "Guía a los barcos hacia el puerto de forma segura. Reduce el riesgo de naufragios y aumenta el comercio.",
 		"texture_path": "",
-		"allowed_area_types": ""
+		"allowed_area_types": []
 		}, 
 	"Wall": {
 		"name": "Wall", 
 		"description": "Fortificación defensiva que protege la ciudad de ataques piratas y potencias enemigas.",
 		"texture_path": "",
-		"allowed_area_types": ""
+		"allowed_area_types": []
 		}, 
 	"Palace": {
 		"name": "Palace", 
 		"description": "Residencia del Virrey. Centro del poder colonial que aumenta la influencia política de la ciudad.",
 		"texture_path": "res://assets/buildings/Casa_Del_Gobernador_Lvl_1.png",
-		"allowed_area_types": ""
+		"allowed_area_types": []
 		}, 
 	"Church": {
 		"name": "Church", 
 		"description": "Centro espiritual de la colonia. Evangeliza a los nativos y mejora la moral de los colonos.",
 		"texture_path": "",
-		"allowed_area_types": ""
+		"allowed_area_types": []
 		}, 
 	"Warehouse": {
 		"name": "Warehouse", 
 		"description": "Aumenta la capacidad de almacenamiento de mercancías antes de enviarlas a España.",
 		"texture_path": "",
-		"allowed_area_types": ""
+		"allowed_area_types": []
 		}, 
 	"Hospital": {
 		"name": "Hospital", 
 		"description": "Atiende a enfermos y heridos. Reduce la mortalidad y mejora la salud de la población.",
 		"texture_path": "",
-		"allowed_area_types": ""
+		"allowed_area_types": []
 		}, 
 	"CityHall": {
 		"name": "CityHall", 
 		"description": "Sede del gobierno local. Permite decretar ordenanzas y gestionar los asuntos municipales.",
 		"texture_path": "res://assets/buildings/Ayuntamiento_Lvl_1.png",
-		"allowed_area_types": ""
+		"allowed_area_types": []
 		}, 
 	"Market": {
 		"name": "Market", 
 		"description": "Plaza comercial donde se intercambian productos locales. Centro económico de la ciudad.",
 		"texture_path": "",
-		"allowed_area_types": ""
+		"allowed_area_types": []
 		}, 
 	"Weaving": {
 		"name": "Weaving", 
 		"description": "Transforma algodón en telas y textiles. Produce ropa para los colonos y productos de exportación.",
 		"texture_path": "",
-		"allowed_area_types": ""
+		"allowed_area_types": []
 		}, 
 	"Carpentry": {
 		"name": "Carpentry", 
 		"description": "Procesa madera para crear herramientas, muebles y materiales de construcción.",
 		"texture_path": "",
-		"allowed_area_types": ""
+		"allowed_area_types": []
 		}, 
 	"Forge": {
 		"name": "Forge", 
 		"description": "Forja herramientas y armas de metal. Esencial para el desarrollo agrícola y la defensa.",
 		"texture_path": "",
-		"allowed_area_types": ""
+		"allowed_area_types": []
 		}, 
 	"Distillery": {
 		"name": "Distillery", 
 		"description": "Produce bebidas alcohólicas como aguardiente. Genera ingresos y mejora la moral colonial.",
 		"texture_path": "",
-		"allowed_area_types": ""
+		"allowed_area_types": []
 		}, 
 	"Mill": {
 		"name": "Mill", 
 		"description": "Procesa granos para convertirlos en harina. Base de la alimentación de la población.",
 		"texture_path": "",
-		"allowed_area_types": ""
+		"allowed_area_types": []
 		}, 
 	}
 var construction_areas: Array = []
@@ -306,21 +306,27 @@ func _on_building_selected(building_key: String) -> void:
 func _start_building_mode(building_id: String) -> void: 
 	current_state = BuildingState.BUILDING
 	selected_building_id = building_id
-	construction_areas = get_tree().get_nodes_in_group("construction_areas")
-	# TODO: animación cuando selecciono el edificio 
-	#$VBoxContainer.modulate.a = 0.8
+	# Solo obtener áreas de construcción de la ciudad
+	construction_areas = get_tree().get_nodes_in_group("city_construction_areas")
 	visible = false
 	_show_all_available_areas()
 	_create_building_preview(building_id)
-	
-	print ("Modo construcción para: " + building_id)
 
 func _show_all_available_areas() -> void: 
 	var building_data = buildings.get(selected_building_id, {})
 	var allowed_types = building_data.get("allowed_area_types", [])
 		
-	for area in construction_areas:		
-		if not area.is_occupied and area.area_type in allowed_types:
+	for area in construction_areas:
+		# No mostrar highlight en áreas de extractores
+		if area.is_extractor_zone:
+			continue
+			
+		# Si no hay tipos específicos, mostrar todas las áreas libres (excepto extractores)
+		if allowed_types.is_empty():
+			if not area.is_occupied:
+				area.show_highlight()
+		# Si hay tipos específicos, solo mostrar esas
+		elif not area.is_occupied and area.area_type in allowed_types:
 			area.show_highlight()
 
 func _create_building_preview(building_id: String) -> void: 
@@ -330,8 +336,8 @@ func _create_building_preview(building_id: String) -> void:
 	
 	building_preview = Area2D.new()
 	building_preview.name = "BuildingPreview"
-	building_preview.collision_layer = 2
-	building_preview.collision_mask = 4
+	building_preview.collision_layer = 2  # Layer 2 para preview
+	building_preview.collision_mask = 1   # IMPORTANTE: Mask 1 para detectar las áreas de construcción
 	
 	var collision = CollisionShape2D.new()
 	var shape = RectangleShape2D.new()
@@ -364,14 +370,15 @@ func _on_preview_entered_area(area: Area2D) -> void:
 	if area is ConstructionArea and not is_snapped:
 		var construction_area = area as ConstructionArea
 		
-		# No hacer snap en áreas ocupadas
-		if construction_area.is_occupied:
+		# No hacer snap en áreas ocupadas o en extractores
+		if construction_area.is_occupied or construction_area.is_extractor_zone:
 			return
 			
 		var building_data = buildings.get(selected_building_id, {})
 		var allowed_types = building_data.get("allowed_area_types", [])
 		
-		if construction_area.area_type in allowed_types:
+		# Si no hay tipos permitidos especificados, permitir todos (excepto extractores)
+		if allowed_types.is_empty() or construction_area.area_type in allowed_types:
 			current_hover_area = construction_area
 
 func _on_preview_exited_area(area: Area2D) -> void:

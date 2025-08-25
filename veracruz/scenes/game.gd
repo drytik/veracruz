@@ -20,6 +20,9 @@ func _init() -> void:
 		queue_free()
 
 func _ready() -> void:
+	# Configurar UI layers
+	_setup_ui_layers()
+	
 	# Asegurar que progression existe
 	if data.progression == null:
 		data.progression = DataProgression.new()
@@ -41,27 +44,33 @@ func _ready() -> void:
 	popup_manager.name = "PopupManager"
 	add_child(popup_manager)
 	
-	# Conectar señales para debug
+	# Conectar señales
 	tick_manager.month_passed.connect(_on_month_passed)
 	tick_manager.year_passed.connect(_on_year_passed)
 	resource_manager.resource_changed.connect(_on_resource_changed)
+
+func _setup_ui_layers() -> void:
+	# UIManager en capa alta para UI global
+	var ui_manager = $UIManager
+	if ui_manager:
+		ui_manager.layer = 100
 	
-	print("=== GAME STARTED ===")
-	print("Date: %s" % tick_manager.get_date_string())
-	print("Initial resources: Wood=%d, Stone=%d, Tools=%d, Piece of 8=%d" % [
-		data.resources.wood,
-		data.resources.stone, 
-		data.resources.tools,
-		data.resources.piece_of_8
-	])
+	# La estructura ya está bien configurada en el editor:
+	# - UI con PASS (deja pasar clicks)
+	# - HBoxContainer con STOP (captura solo donde hay UI)
+	# Solo aseguramos que los spacers no capturen
+	
+	var hbox = $UIManager/UI/HBoxContainer
+	if hbox:
+		for child in hbox.get_children():
+			if child.name.begins_with("Spacer"):
+				child.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 func _on_month_passed() -> void:
-	print("Month passed: %s" % tick_manager.get_date_string())
+	pass  # Sin print
 
 func _on_year_passed() -> void:
-	print("=== YEAR %d ENDED ===" % (tick_manager.current_year - 1))
+	pass  # Sin print
 
 func _on_resource_changed(resource_name: String, new_amount: int, old_amount: int) -> void:
-	var change = new_amount - old_amount
-	var symbol = "+" if change > 0 else ""
-	print("Resource changed: %s %s%d (now: %d)" % [resource_name, symbol, change, new_amount])
+	pass  # Sin print

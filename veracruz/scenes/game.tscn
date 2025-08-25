@@ -1,7 +1,8 @@
-[gd_scene load_steps=13 format=3 uid="uid://vej20q6oy03v"]
+[gd_scene load_steps=15 format=3 uid="uid://vej20q6oy03v"]
 
 [ext_resource type="Texture2D" uid="uid://v3toqe8lhsde" path="res://assets/Mapa_Veracruz-2.png" id="1_uwrxv"]
 [ext_resource type="Script" uid="uid://dq1xagrx4jyit" path="res://scenes/game.gd" id="1_yqjtg"]
+[ext_resource type="Script" uid="uid://dvok67ifhovi3" path="res://scripts/ui/global_ui_manager.gd" id="2_kvuet"]
 [ext_resource type="Script" uid="uid://c60iffdjjxrk0" path="res://scenes/camera_2d.gd" id="2_lnu2h"]
 [ext_resource type="Script" uid="uid://c15ufn07nbgy5" path="res://scenes/city_ui_manager.gd" id="3_p57ef"]
 [ext_resource type="Texture2D" uid="uid://b2e67uncwgxpn" path="res://assets/buildings/PuertoAstillero_Lvl_1.png" id="4_lbhrr"]
@@ -9,6 +10,7 @@
 [ext_resource type="Texture2D" uid="uid://b2yogvcd6fv7u" path="res://assets/buildings/Taberna_Lvl_1.png" id="5_gee14"]
 [ext_resource type="Texture2D" uid="uid://csnvosc3c0iiy" path="res://assets/buildings/Casa_Del_Gobernador_Lvl_1.png" id="6_0tnpc"]
 [ext_resource type="Texture2D" uid="uid://dvh3vjaisu0ly" path="res://assets/buildings/Ayuntamiento_Lvl_1.png" id="7_0tnpc"]
+[ext_resource type="Script" uid="uid://d17yeyjfpydfc" path="res://scenes/world_ui_manager.gd" id="10_kvpfn"]
 [ext_resource type="Texture2D" uid="uid://dkwnf66f8kj4s" path="res://assets/Mapa_Mundo.png" id="10_vtaks"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_80nbo"]
@@ -21,6 +23,7 @@ size = Vector2(153.25, 149.25)
 script = ExtResource("1_yqjtg")
 
 [node name="UIManager" type="CanvasLayer" parent="."]
+script = ExtResource("2_kvuet")
 
 [node name="UI" type="Control" parent="UIManager"]
 layout_mode = 3
@@ -31,6 +34,7 @@ grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+mouse_filter = 2
 
 [node name="HBoxContainer" type="HBoxContainer" parent="UIManager/UI"]
 layout_mode = 1
@@ -38,6 +42,7 @@ anchors_preset = 10
 anchor_right = 1.0
 offset_bottom = 110.0
 grow_horizontal = 2
+mouse_filter = 0
 
 [node name="Spacer" type="Control" parent="UIManager/UI/HBoxContainer"]
 custom_minimum_size = Vector2(200, 0)
@@ -68,8 +73,10 @@ editor_draw_limits = true
 script = ExtResource("2_lnu2h")
 
 [node name="CityScene" type="Node2D" parent="SceneManager"]
+visible = false
 
 [node name="CityUIManager" type="CanvasLayer" parent="SceneManager/CityScene"]
+visible = false
 script = ExtResource("3_p57ef")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="SceneManager/CityScene/CityUIManager"]
@@ -1216,6 +1223,9 @@ shape = SubResource("RectangleShape2D_80nbo")
 
 [node name="WorldScene" type="Node2D" parent="SceneManager"]
 
+[node name="WorldUIManager" type="CanvasLayer" parent="SceneManager/WorldScene"]
+script = ExtResource("10_kvpfn")
+
 [node name="WorldSprite" type="Sprite2D" parent="SceneManager/WorldScene"]
 scale = Vector2(0.5, 0.5)
 texture = ExtResource("10_vtaks")
@@ -1226,7 +1236,6 @@ centered = false
 [node name="Area2D" type="Area2D" parent="SceneManager/WorldScene/WorldSprite/ExtractorZones"]
 script = ExtResource("4_p57ef")
 is_extractor_zone = true
-extractor_type = "lumbermill"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="SceneManager/WorldScene/WorldSprite/ExtractorZones/Area2D"]
 position = Vector2(1368, 1092)
