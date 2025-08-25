@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://vej20q6oy03v"]
+[gd_scene load_steps=13 format=3 uid="uid://vej20q6oy03v"]
 
 [ext_resource type="Texture2D" uid="uid://v3toqe8lhsde" path="res://assets/Mapa_Veracruz-2.png" id="1_uwrxv"]
 [ext_resource type="Script" uid="uid://dq1xagrx4jyit" path="res://scenes/game.gd" id="1_yqjtg"]
@@ -9,9 +9,13 @@
 [ext_resource type="Texture2D" uid="uid://b2yogvcd6fv7u" path="res://assets/buildings/Taberna_Lvl_1.png" id="5_gee14"]
 [ext_resource type="Texture2D" uid="uid://csnvosc3c0iiy" path="res://assets/buildings/Casa_Del_Gobernador_Lvl_1.png" id="6_0tnpc"]
 [ext_resource type="Texture2D" uid="uid://dvh3vjaisu0ly" path="res://assets/buildings/Ayuntamiento_Lvl_1.png" id="7_0tnpc"]
+[ext_resource type="Texture2D" uid="uid://dkwnf66f8kj4s" path="res://assets/Mapa_Mundo.png" id="10_vtaks"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_80nbo"]
 size = Vector2(16.8413, 25.6203)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_vtaks"]
+size = Vector2(153.25, 149.25)
 
 [node name="Game" type="Node"]
 script = ExtResource("1_yqjtg")
@@ -64,8 +68,10 @@ editor_draw_limits = true
 script = ExtResource("2_lnu2h")
 
 [node name="CityScene" type="Node2D" parent="SceneManager"]
+visible = false
 
 [node name="CityUIManager" type="CanvasLayer" parent="SceneManager/CityScene"]
+visible = false
 script = ExtResource("3_p57ef")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="SceneManager/CityScene/CityUIManager"]
@@ -1011,7 +1017,6 @@ vertical_alignment = 1
 autowrap_mode = 3
 
 [node name="CitySprite" type="Sprite2D" parent="SceneManager/CityScene"]
-position = Vector2(-9, 0)
 scale = Vector2(0.5, 0.5)
 texture = ExtResource("1_uwrxv")
 centered = false
@@ -1212,4 +1217,19 @@ skew = 0.523599
 shape = SubResource("RectangleShape2D_80nbo")
 
 [node name="WorldScene" type="Node2D" parent="SceneManager"]
-visible = false
+
+[node name="WorldSprite" type="Sprite2D" parent="SceneManager/WorldScene"]
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("10_vtaks")
+centered = false
+
+[node name="ExtractorZones" type="Node2D" parent="SceneManager/WorldScene/WorldSprite"]
+
+[node name="Area2D" type="Area2D" parent="SceneManager/WorldScene/WorldSprite/ExtractorZones"]
+script = ExtResource("4_p57ef")
+is_extractor_zone = true
+extractor_type = "lumbermill"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SceneManager/WorldScene/WorldSprite/ExtractorZones/Area2D"]
+position = Vector2(1368, 1092)
+shape = SubResource("RectangleShape2D_vtaks")

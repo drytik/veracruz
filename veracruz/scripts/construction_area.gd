@@ -1,6 +1,8 @@
 class_name ConstructionArea
 extends Area2D
 
+signal area_clicked(area: ConstructionArea)
+
 enum TYPE {
 	x2x1, 
 	x2x2,
@@ -10,12 +12,17 @@ enum TYPE {
 	PORT
 }
 
-@export_enum("x2x1", "x2x2", "x3x2", "WALL", "WORKSHOP", "PORT")
-var area_type : int
+@export_enum("x2x1", "x2x2", "x3x2", "WALL", "WORKSHOP", "PORT") var area_type : int
 @export var center_position : Vector2 = Vector2.ZERO
 @export var is_occupied : bool = false
 
+# Metadata para extractores (WorldMap)
+@export var is_extractor_zone : bool = false
+@export var extractor_type : String = ""  # "lumbermill", "quarry", "plantation"
+@export var available_resources : Array[String] = []  # ["wood"] o ["stone", "silver"]
+
 var highlight_shape: Node2D
+var zone_id : String = ""  # ID único para save/load
 
 func _ready() -> void:
 	add_to_group("construction_areas")
@@ -24,8 +31,20 @@ func _ready() -> void:
 	collision_layer = 4
 	collision_mask = 2
 	
+	# Generar ID único si es zona de extractor
+	if is_extractor_zone:
+		zone_id = extractor_type + "_" + str(get_instance_id())
+		add_to_group("extractor_zones")
+	
 	# NO calcular center_position aquí, lo haremos dinámicamente
 	_create_highlight()
+	
+	# Hacer clickeable
+	input_pickable = true
+	mouse_entered.connect(_on_mouse_entered)
+	mouse_exited.connect(_on_mouse_exited)
+	input_event.connect(_on_input_event)
+
 func get_global_center() -> Vector2:
 	var collision_shape = get_node("CollisionShape2D")
 	if collision_shape:
@@ -38,7 +57,8 @@ func get_global_center() -> Vector2:
 		
 		return center + offset_correction
 	return global_position
-func _create_highlight() -> void: 
+
+func _create_highlight() -> void:
 	# Duplicar el CollisionShape2D existente
 	var collision_shape = get_node("CollisionShape2D")
 	if collision_shape:
@@ -67,8 +87,36 @@ func _create_highlight() -> void:
 		highlight_shape.visible = false
 		highlight_shape.z_index = 1
 		add_child(highlight_shape)
-func show_highlight() -> void: 
-	if not is_occupied: 
-		highlight_shape.visible = true	
-func hide_highlight() -> void: 
+
+func show_highlight() -> void:
+	if not is_occupied:
+		highlight_shape.visible = true
+
+func hide_highlight() -> void:
 	highlight_shape.visible = false
+
+func _on_mouse_entered() -> void:
+	if is_extractor_zone and not is_occupied:
+		modulate = Color(1.1, 1.1, 1.1)  # Iluminar un poco al hover
+
+func _on_mouse_exited() -> void:
+	modulate = Color.WHITE
+
+func _on_input_event(viewport: Node, event: InputEvent, shape_idx: int) -> void:
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+			if is_extractor_zone:
+				# Abrir popup del extractor
+				_open_extractor_popup()
+			else:
+				emit_signal("area_clicked", self)
+
+func _open_extractor_popup() -> void:
+	# Obtener nivel actual de la zona (por ahora 0, luego lo sacaremos de progression)
+	var level = 0
+	
+	# Para pruebas, si no tiene tipo asignado, usar lumbermill
+	if extractor_type == "":
+		extractor_type = "lumbermill"
+	
+	PopupManager.ref.show_extractor_popup(zone_id, extractor_type, level)
