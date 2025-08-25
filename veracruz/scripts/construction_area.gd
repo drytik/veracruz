@@ -18,7 +18,7 @@ enum TYPE {
 
 # Metadata para extractores (WorldMap)
 @export var is_extractor_zone : bool = false
-@export var extractor_type : String = ""  # "lumbermill", "quarry", "plantation"
+@export_enum("empty", "lumbermill", "quarry", "plantation") var extractor_type : String = ""  # Lista desplegable
 @export var available_resources : Array[String] = []  # ["wood"] o ["stone", "silver"]
 
 var highlight_shape: Node2D

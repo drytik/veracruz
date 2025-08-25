@@ -68,10 +68,8 @@ editor_draw_limits = true
 script = ExtResource("2_lnu2h")
 
 [node name="CityScene" type="Node2D" parent="SceneManager"]
-visible = false
 
 [node name="CityUIManager" type="CanvasLayer" parent="SceneManager/CityScene"]
-visible = false
 script = ExtResource("3_p57ef")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="SceneManager/CityScene/CityUIManager"]
