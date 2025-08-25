@@ -1,233 +1,199 @@
-class_name ExtractorPopup
-extends PanelContainer
+class_name BaseExtractor
+extends Node2D
 
-signal closed
-signal workers_changed(zone_id: String, workers: int)
-signal upgrade_requested(zone_id: String)
-signal abandon_requested(zone_id: String)
+@export var extractor_id : String = ""
+@export var extractor_type : String = "lumbermill"
+@export var zone_area : ConstructionArea
+@export var current_level : int = 0
 
-# NO usar @onready porque creamos los nodos programáticamente
-var title_label : Label
-var close_button : Button
-var description_label : Label
-var resource_label : Label
-var workers_label : Label
-var workers_slider : HSlider
-var production_label : Label
-var upgrade_button : Button
-var abandon_button : Button
+var sprite : Sprite2D
+var is_active : bool = false
+var months_since_production : int = 0
+var production_cycle : int = 1  # Meses entre producciones (1 = mensual)
 
-var current_zone_id : String = ""
-var current_zone_type : String = ""
-var current_level : int = 0
-var max_workers : int = 0
+# YA NO NECESITAMOS extractor_configs aquí - usaremos ExtractorConfigManager
 
-## Configuraciones por tipo de extractor
-var extractor_configs = {
-	"lumbermill": {
-		"name": "Aserradero",
-		"description": "Produce madera de los bosques cercanos",
-		"resource": "wood",
-		"resource_display_name": "Madera",  # Cambiado
-		"max_workers": [10, 20, 30, 40],  # Por nivel
-		"base_production": [10, 20, 35, 50],  # Por nivel con max workers
-		"upgrade_cost": [
-			{"wood": 50, "tools": 5},
-			{"wood": 100, "stone": 50, "tools": 10},
-			{"wood": 200, "stone": 100, "tools": 20}
-		]
-	},
-	"quarry": {
-		"name": "Cantera",
-		"description": "Extrae piedra y minerales",
-		"resource": "stone",  # Puede variar según la zona
-		"resource_display_name": "Piedra",  # Cambiado
-		"max_workers": [15, 25, 35, 45],
-		"base_production": [8, 16, 28, 40],
-		"upgrade_cost": [
-			{"wood": 30, "tools": 8},
-			{"wood": 80, "stone": 60, "tools": 15},
-			{"wood": 150, "stone": 120, "tools": 25}
-		]
-	},
-	"plantation": {
-		"name": "Plantación",
-		"description": "Cultiva productos agrícolas",
-		"resource": "corn",  # Puede variar
-		"resource_display_name": "Maíz",  # Cambiado
-		"max_workers": [20, 30, 40, 50],
-		"base_production": [15, 30, 45, 65],
-		"upgrade_cost": [
-			{"wood": 40, "tools": 3},
-			{"wood": 90, "stone": 40, "tools": 8},
-			{"wood": 180, "stone": 90, "tools": 15}
-		]
-	}
-}
+func _ready() -> void:
+	# Generar ID único si no tiene
+	if extractor_id.is_empty():
+		extractor_id = extractor_type + "_" + str(get_instance_id())
+	
+	# Registrarse para recibir ticks
+	add_to_group("tick_receivers")
+	add_to_group("extractors")
+	
+	# Conectar señales del TickManager
+	if TickManager.ref:
+		TickManager.ref.month_passed.connect(_on_month_passed)
+	
+	# Crear sprite visual
+	_create_visual()
+	
+	# Obtener configuración
+	var config = ExtractorConfigManager.ref.get_config(extractor_type)
+	if not config.is_empty():
+		production_cycle = config.get("production_cycle", 1)
+	
+	# Registrar en DataProgression para save/load
+	_register_in_progression()
 
-func _ready():
-	# NO llamar _get_node_references aquí porque aún no está en el árbol
-	# Se llamará desde setup_zone después de ser añadido
-	
-	# Centrar en pantalla
-	custom_minimum_size = Vector2(400, 500)
+func _create_visual() -> void:
+	sprite = Sprite2D.new()
+	sprite.scale = Vector2(0.5, 0.5)
+	add_child(sprite)
+	_update_visual()
 
-func _get_node_references():
-	# NO usar await aquí
-	# Buscar los nodos por su path correcto
-	var base_path = "MarginContainer/VBoxContainer/"
-	
-	# Intentar obtener las referencias
-	title_label = get_node_or_null(base_path + "Header/TitleLabel")
-	close_button = get_node_or_null(base_path + "Header/CloseButton")
-	description_label = get_node_or_null(base_path + "DescriptionLabel")
-	resource_label = get_node_or_null(base_path + "ResourceLabel")
-	workers_label = get_node_or_null(base_path + "WorkersSection/WorkersLabel")
-	workers_slider = get_node_or_null(base_path + "WorkersSection/WorkersSlider")
-	production_label = get_node_or_null(base_path + "ProductionLabel")
-	upgrade_button = get_node_or_null(base_path + "ButtonsContainer/UpgradeButton")
-	abandon_button = get_node_or_null(base_path + "ButtonsContainer/AbandonButton")
-	
-	# Conectar señales si los nodos existen
-	if close_button:
-		close_button.pressed.connect(_on_close_pressed)
-	if workers_slider:
-		workers_slider.value_changed.connect(_on_workers_changed)
-		print("Slider connected successfully")
-	else:
-		print("ERROR: Slider not found")
-	if upgrade_button:
-		upgrade_button.pressed.connect(_on_upgrade_pressed)
-	if abandon_button:
-		abandon_button.pressed.connect(_on_abandon_pressed)
-	
-func setup_zone(zone_id: String, zone_type: String, level: int = 0):
-	current_zone_id = zone_id
-	current_zone_type = zone_type
-	current_level = level
-	
-	# Obtener referencias DESPUÉS de ser añadido al árbol
-	call_deferred("_setup_zone_deferred", zone_id, zone_type, level)
-
-func _setup_zone_deferred(zone_id: String, zone_type: String, level: int):
-	# Ahora sí obtener las referencias
-	_get_node_references()
-	
-	var config = extractor_configs.get(zone_type, {})
-	if config.is_empty():
-		push_error("Unknown zone type: " + zone_type)
-		return
-		
-	# Configurar UI
-	if title_label:
-		title_label.text = config.name + " - Nivel " + str(level + 1)
-	if description_label:
-		description_label.text = config.description
-	if resource_label:
-		resource_label.text = "Produce: " + config.resource_display_name  # Cambiado
-	
-	# Configurar workers
-	max_workers = config.max_workers[level]
-	var current_workers = WorkerManager.ref.get_assigned_workers(zone_id)
-	
-	if workers_slider:
-		workers_slider.max_value = max_workers
-		workers_slider.value = current_workers
-	
-	_update_workers_label(current_workers)
-	_update_production_label(current_workers)
-	
-	# Configurar botón upgrade
-	if upgrade_button:
-		if level < 3:  # Max nivel 4
-			var upgrade_cost = config.upgrade_cost[level]
-			var cost_text = "Mejorar - Costo: "
-			for resource in upgrade_cost:
-				cost_text += str(upgrade_cost[resource]) + " " + resource + " "
-			upgrade_button.text = cost_text
-			upgrade_button.disabled = not ResourceManager.ref.has_resources(upgrade_cost)
-		else:
-			upgrade_button.text = "Nivel Máximo"
-			upgrade_button.disabled = true
-
-func _update_workers_label(workers: int):
-	if not workers_label:
-		return
-		
-	workers_label.text = "Trabajadores: %d/%d" % [workers, max_workers]
-	
-	var idle = Game.ref.data.resources.idle_workers
-	if workers < max_workers:
-		workers_label.text += " (Disponibles: %d)" % idle
-
-func _update_production_label(workers: int):
-	if not production_label:
-		return
-		
-	var config = extractor_configs.get(current_zone_type, {})
+func _update_visual() -> void:
+	var config = ExtractorConfigManager.ref.get_config(extractor_type)
 	if config.is_empty():
 		return
 		
-	var max_production = config.base_production[current_level]
-	var actual_production = 0
-	if max_workers > 0:
-		actual_production = int(max_production * float(workers) / float(max_workers))
-	
-	production_label.text = "Producción: %d %s/mes" % [actual_production, config.resource_display_name]  # Cambiado
+	# Por ahora usar placeholder siempre ya que no tenemos texturas
+	_create_placeholder_visual()
 
-func _on_close_pressed():
-	emit_signal("closed")
-	queue_free()
+func _create_placeholder_visual() -> void:
+	# Crear un ColorRect como placeholder
+	var placeholder = ColorRect.new()
+	placeholder.size = Vector2(100, 100)
+	placeholder.position = Vector2(-50, -50)
+	placeholder.color = Color(0.5, 0.3, 0.1, 0.8)  # Marrón
+	
+	# Añadir label con el tipo
+	var label = Label.new()
+	label.text = extractor_type.capitalize()
+	label.position = Vector2(-40, -10)
+	placeholder.add_child(label)
+	
+	sprite.add_child(placeholder)
 
-func _on_workers_changed(value: float):
-	print("Slider changed to: %f" % value)
-	var new_workers = int(value)
-	
-	# Si es la primera vez que se asignan workers, crear el extractor
-	if new_workers > 0:
-		_ensure_extractor_exists()
-	
-	if WorkerManager.ref.assign_workers(current_zone_id, new_workers):
-		print("Workers assigned: %d" % new_workers)
-		_update_workers_label(new_workers)
-		_update_production_label(new_workers)
-		emit_signal("workers_changed", current_zone_id, new_workers)
-	else:
-		print("Failed to assign workers")
-		# Revertir slider si no hay suficientes workers
-		if workers_slider:
-			workers_slider.value = WorkerManager.ref.get_assigned_workers(current_zone_id)
-
-func _ensure_extractor_exists():
-	# Verificar si ya existe el extractor
-	var extractors = get_tree().get_nodes_in_group("extractors")
-	for extractor in extractors:
-		if extractor.extractor_id == current_zone_id:
-			return  # Ya existe
-	
-	# Crear nuevo extractor
-	var extractor = BaseExtractor.new()
-	extractor.extractor_id = current_zone_id
-	extractor.extractor_type = current_zone_type
-	extractor.current_level = current_level
-	
-	# Encontrar la zona para obtener la posición
-	var zones = get_tree().get_nodes_in_group("world_extractor_zones")
-	for zone in zones:
-		if zone.zone_id == current_zone_id:
-			extractor.position = zone.global_position
-			extractor.zone_area = zone
+func _register_in_progression() -> void:
+	# Buscar si ya existe en progression
+	var found = false
+	for data in Game.ref.data.progression.extractors_data:
+		if data.get("extractor_id") == extractor_id:
+			found = true
+			current_level = data.get("level", 0)
 			break
 	
-	# Añadir al WorldScene
-	var world_scene = get_node_or_null("/root/Game/SceneManager/WorldScene")
-	if world_scene:
-		world_scene.add_child(extractor)
-		extractor.activate()
-		print("Extractor created: %s at %s" % [current_zone_id, extractor.position])
+	# Si no existe, añadir
+	if not found:
+		var data = {
+			"extractor_id": extractor_id,
+			"type": extractor_type,
+			"level": current_level,
+			"position": global_position
+		}
+		Game.ref.data.progression.extractors_data.append(data)
 
-func _on_upgrade_pressed():
-	emit_signal("upgrade_requested", current_zone_id)
+func activate() -> void:
+	is_active = true
+	visible = true
 
-func _on_abandon_pressed():
-	emit_signal("abandon_requested", current_zone_id)
+func deactivate() -> void:
+	is_active = false
+	visible = false
+	# Liberar workers si hay
+	WorkerManager.ref.free_workers(extractor_id)
+
+func _on_month_passed() -> void:
+	if not is_active:
+		return
+		
+	months_since_production += 1
+	
+	# Verificar si toca producir
+	if months_since_production >= production_cycle:
+		months_since_production = 0
+		_produce_resources()
+
+func _produce_resources() -> void:
+	var workers = WorkerManager.ref.get_assigned_workers(extractor_id)
+	if workers == 0:
+		return
+	
+	var config = ExtractorConfigManager.ref.get_config(extractor_type)
+	if config.is_empty():
+		return
+	
+	# Calcular producción basada en workers
+	var max_workers = config.max_workers[current_level]
+	var base_production = config.base_production[current_level]
+	
+	# Producción proporcional a workers asignados
+	var efficiency = float(workers) / float(max_workers)
+	var actual_production = int(base_production * efficiency)
+	
+	# Añadir recurso
+	var resource_type = config.resource
+	
+	# Si es plantación, verificar recurso específico de la zona
+	if extractor_type == "plantation" and zone_area:
+		var zone_resources = zone_area.available_resources
+		if zone_resources.size() > 0:
+			resource_type = zone_resources[0]
+	
+	ResourceManager.ref.add_resource(resource_type, actual_production)
+	
+	# Crear notificación visual (opcional)
+	_show_production_popup(actual_production, resource_type)
+
+func _show_production_popup(amount: int, resource: String) -> void:
+	# Crear un label temporal que muestre la producción
+	var popup = Label.new()
+	popup.text = "+%d %s" % [amount, resource]
+	popup.add_theme_color_override("font_color", Color.GREEN)
+	popup.add_theme_font_size_override("font_size", 16)
+	popup.position = Vector2(0, -50)
+	add_child(popup)
+	
+	# Animar hacia arriba y desvanecer
+	var tween = create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(popup, "position:y", -100, 1.0)
+	tween.tween_property(popup, "modulate:a", 0.0, 1.0)
+	tween.chain().tween_callback(popup.queue_free)
+
+func upgrade() -> bool:
+	if current_level >= 3:  # Max nivel 4 (0-3)
+		return false
+	
+	var config = ExtractorConfigManager.ref.get_config(extractor_type)
+	if config.is_empty():
+		return false
+	
+	# Verificar costos (definidos en ExtractorPopup por ahora)
+	# TODO: Mover costos aquí o a un UpgradeManager
+	
+	current_level += 1
+	_update_visual()
+	
+	# Actualizar en progression
+	for data in Game.ref.data.progression.extractors_data:
+		if data.get("extractor_id") == extractor_id:
+			data["level"] = current_level
+			break
+	
+	return true
+
+func get_info() -> Dictionary:
+	var config = ExtractorConfigManager.ref.get_config(extractor_type)
+	var workers = WorkerManager.ref.get_assigned_workers(extractor_id)
+	var max_workers = config.get("max_workers", [10])[current_level]
+	var base_production = config.get("base_production", [10])[current_level]
+	
+	var efficiency = 0.0
+	if max_workers > 0:
+		efficiency = float(workers) / float(max_workers)
+	
+	return {
+		"id": extractor_id,
+		"type": extractor_type,
+		"name": config.get("name", "Unknown"),
+		"level": current_level,
+		"workers": workers,
+		"max_workers": max_workers,
+		"efficiency": efficiency,
+		"production_per_cycle": int(base_production * efficiency),
+		"production_cycle": production_cycle,
+		"resource": config.get("resource", "unknown")
+	}

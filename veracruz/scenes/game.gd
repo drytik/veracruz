@@ -12,6 +12,7 @@ var tick_manager : TickManager
 var resource_manager : ResourceManager
 var worker_manager : WorkerManager
 var popup_manager : PopupManager
+var extractor_config_manager : ExtractorConfigManager
 
 func _init() -> void:
 	if ref == null: 
@@ -43,6 +44,10 @@ func _ready() -> void:
 	popup_manager = PopupManager.new()
 	popup_manager.name = "PopupManager"
 	add_child(popup_manager)
+	
+	extractor_config_manager = ExtractorConfigManager.new()
+	extractor_config_manager.name = "ExtractorConfigManager"
+	add_child(extractor_config_manager)
 	
 	# Conectar señales
 	tick_manager.month_passed.connect(_on_month_passed)
