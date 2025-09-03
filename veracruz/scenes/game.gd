@@ -12,7 +12,9 @@ var tick_manager : TickManager
 var resource_manager : ResourceManager
 var worker_manager : WorkerManager
 var popup_manager : PopupManager
-var extractor_config_manager : ExtractorConfigManager
+var building_system : BuildingSystem
+var extractor_system : ExtractorSystem
+var save_manager : SaveManager
 
 func _init() -> void:
 	if ref == null: 
@@ -45,9 +47,17 @@ func _ready() -> void:
 	popup_manager.name = "PopupManager"
 	add_child(popup_manager)
 	
-	extractor_config_manager = ExtractorConfigManager.new()
-	extractor_config_manager.name = "ExtractorConfigManager"
-	add_child(extractor_config_manager)
+	building_system = BuildingSystem.new()
+	building_system.name = "BuildingSystem"
+	add_child(building_system)
+	
+	extractor_system = ExtractorSystem.new()
+	extractor_system.name = "ExtractorSystem"
+	add_child(extractor_system)
+	
+	save_manager = SaveManager.new()
+	save_manager.name = "SaveManager"
+	add_child(save_manager)
 	
 	# Conectar señales
 	tick_manager.month_passed.connect(_on_month_passed)

@@ -10,9 +10,16 @@ extends Resource
 @export var total_resources_produced : Dictionary = {}
 @export var total_resources_consumed : Dictionary = {}
 
-## Estado de edificios (para save/load)
-@export var buildings_data : Array = []  # Array[BuildingData] cuando lo creemos
-@export var extractors_data : Array = []  # Array[ExtractorData] cuando lo creemos
+## Estado de edificios y extractores (para save/load)
+@export var buildings : Array[BuildingInstance] = []
+@export var extractors : Array[ExtractorInstance] = []
 
-## Workers asignados
-@export var assigned_workers : Dictionary = {}  # building_id -> workers
+## Zonas y recursos desbloqueados
+@export var unlocked_zones : Array[String] = []  # IDs de zonas conquistadas
+@export var unlocked_resources : Dictionary = {
+	"quarry": ["clay"],       # Clay desbloqueado por defecto
+	"plantation": ["fruits"]  # Fruits desbloqueado por defecto
+}
+
+## Workers asignados (redundante con instances pero útil para búsqueda rápida)
+@export var assigned_workers : Dictionary = {}  # instance_id -> workers

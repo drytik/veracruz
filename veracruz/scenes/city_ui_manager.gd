@@ -5,129 +5,37 @@ extends CanvasLayer
 @onready var button2 = $VBoxContainer/HBoxContainer/SideButtons/VBoxContainer/Button2
 @onready var city_scene: Node2D = $".."
 
-
 signal building_selected
 
-var buildings: Dictionary = {
-	"Port": {
-		"name": "Port", 
-		"description": "Permite el comercio marítimo y la llegada de nuevos colonos. Genera ingresos por comercio.",
-		"texture_path": "res://assets/buildings/PuertoAstillero_Lvl_1.png",
-		"allowed_area_types": [5]
-		},
-	"Tabern": {
-		"name": "Tabern", 
-		"description": "Lugar de encuentro social donde los colonos se reúnen. Mejora el bienestar y la información comercial.",
-		"texture_path": "res://assets/buildings/Taberna_Lvl_1.png",
-		"allowed_area_types": []
-		}, 
-	"Lighthouse": {
-		"name": "Lighthouse", 
-		"description": "Guía a los barcos hacia el puerto de forma segura. Reduce el riesgo de naufragios y aumenta el comercio.",
-		"texture_path": "",
-		"allowed_area_types": []
-		}, 
-	"Wall": {
-		"name": "Wall", 
-		"description": "Fortificación defensiva que protege la ciudad de ataques piratas y potencias enemigas.",
-		"texture_path": "",
-		"allowed_area_types": []
-		}, 
-	"Palace": {
-		"name": "Palace", 
-		"description": "Residencia del Virrey. Centro del poder colonial que aumenta la influencia política de la ciudad.",
-		"texture_path": "res://assets/buildings/Casa_Del_Gobernador_Lvl_1.png",
-		"allowed_area_types": []
-		}, 
-	"Church": {
-		"name": "Church", 
-		"description": "Centro espiritual de la colonia. Evangeliza a los nativos y mejora la moral de los colonos.",
-		"texture_path": "",
-		"allowed_area_types": []
-		}, 
-	"Warehouse": {
-		"name": "Warehouse", 
-		"description": "Aumenta la capacidad de almacenamiento de mercancías antes de enviarlas a España.",
-		"texture_path": "",
-		"allowed_area_types": []
-		}, 
-	"Hospital": {
-		"name": "Hospital", 
-		"description": "Atiende a enfermos y heridos. Reduce la mortalidad y mejora la salud de la población.",
-		"texture_path": "",
-		"allowed_area_types": []
-		}, 
-	"CityHall": {
-		"name": "CityHall", 
-		"description": "Sede del gobierno local. Permite decretar ordenanzas y gestionar los asuntos municipales.",
-		"texture_path": "res://assets/buildings/Ayuntamiento_Lvl_1.png",
-		"allowed_area_types": []
-		}, 
-	"Market": {
-		"name": "Market", 
-		"description": "Plaza comercial donde se intercambian productos locales. Centro económico de la ciudad.",
-		"texture_path": "",
-		"allowed_area_types": []
-		}, 
-	"Weaving": {
-		"name": "Weaving", 
-		"description": "Transforma algodón en telas y textiles. Produce ropa para los colonos y productos de exportación.",
-		"texture_path": "",
-		"allowed_area_types": []
-		}, 
-	"Carpentry": {
-		"name": "Carpentry", 
-		"description": "Procesa madera para crear herramientas, muebles y materiales de construcción.",
-		"texture_path": "",
-		"allowed_area_types": []
-		}, 
-	"Forge": {
-		"name": "Forge", 
-		"description": "Forja herramientas y armas de metal. Esencial para el desarrollo agrícola y la defensa.",
-		"texture_path": "",
-		"allowed_area_types": []
-		}, 
-	"Distillery": {
-		"name": "Distillery", 
-		"description": "Produce bebidas alcohólicas como aguardiente. Genera ingresos y mejora la moral colonial.",
-		"texture_path": "",
-		"allowed_area_types": []
-		}, 
-	"Mill": {
-		"name": "Mill", 
-		"description": "Procesa granos para convertirlos en harina. Base de la alimentación de la población.",
-		"texture_path": "",
-		"allowed_area_types": []
-		}, 
-	}
+var buildings: Dictionary = DataBuilding.BUILDINGS  # Usar los datos de DataBuilding
 var construction_areas: Array = []
 
 ## BUILDING STATE MACHINE
 
 # Construction States
-
 enum BuildingState {
 	NORMAL, 
 	BUILDING
 }
 
 # State variables 
-
 var current_state: BuildingState = BuildingState.NORMAL
 var selected_building_id: String = ""
 var building_preview: Node2D = null
-var current_hover_area: ConstructionArea = null
-var snap_distance_threshold: float = 150.0  # Distancia para mantener el snap
+var current_hover_area: CityBuildingSlot = null  # CAMBIADO: Era ConstructionArea
+var snap_distance_threshold: float = 150.0
 var is_snapped: bool = false
 
 func _ready() -> void:
-	
 	_toggle_menu(0)
 	visible = false
 	tooltip.visible = false
 	
-	var building_ids_menu1: Array = ["Port", "Tabern", "Lighthouse", "Wall", "Palace", "Church", "Warehouse", "Hospital"]
-	var building_ids_menu2: Array = ["CityHall", "Market", "Weaving", "Carpentry", "Forge", "Distillery", "Mill"]
+	var building_ids_menu1: Array = ["port", "tavern", "lighthouse", "wall", "palace", "church", "warehouse", "hospital"]
+	var building_ids_menu2: Array = ["cityhall", "market", "weaving", "carpentry", "forge", "distillery", "mill"]
+	
+	# Nota: Los IDs ahora deben coincidir con las keys en DataBuilding.BUILDINGS
+	# Cambié de "Port" a "port", "Tabern" a "tavern", etc.
 	
 	for i in range(building_ids_menu1.size()): 
 		var button_path = "VBoxContainer/HBoxContainer/PanelContainer/HBoxContainer2/HBoxContainer/Building" + str(i) + "/VBoxContainer/TextureButton"
@@ -142,7 +50,8 @@ func _ready() -> void:
 		var label = get_node(label_path) as Label
 		
 		if label: 
-			label.text = str(building_ids_menu1[i])
+			var building_data = DataBuilding.get_building_data(building_ids_menu1[i])
+			label.text = building_data.get("name", building_ids_menu1[i].capitalize())
 		
 	for i in range(building_ids_menu2.size()): 
 		var button_path = "VBoxContainer/HBoxContainer/PanelContainer2/HBoxContainer2/HBoxContainer/Building" + str(i) + "/VBoxContainer/TextureButton"
@@ -157,7 +66,8 @@ func _ready() -> void:
 		var label = get_node(label_path) as Label
 	
 		if label: 
-			label.text = str(building_ids_menu2[i])
+			var building_data = DataBuilding.get_building_data(building_ids_menu2[i])
+			label.text = building_data.get("name", building_ids_menu2[i].capitalize())
 			
 	button1.connect("pressed", _on_menu_button_pressed.bind(0))
 	button2.connect("pressed", _on_menu_button_pressed.bind(1))
@@ -166,47 +76,38 @@ func _process(delta: float) -> void:
 	if current_state == BuildingState.BUILDING and building_preview:
 		var mouse_pos = city_scene.get_global_mouse_position()
 		
-		# Si ya estamos snapped, verificar si debemos soltar el snap
 		if is_snapped and current_hover_area:
 			var area_center = current_hover_area.get_global_center()
 			var distance_to_area = mouse_pos.distance_to(area_center)
 			
 			if distance_to_area > snap_distance_threshold:
-				# Soltar el snap si nos alejamos mucho
 				is_snapped = false
 				current_hover_area.show_highlight()
 				current_hover_area = null
 				building_preview.global_position = mouse_pos
 				
-				# Restaurar color del preview
 				var sprite = building_preview.get_node("SpritePreview")
 				if sprite:
-					sprite.modulate = Color(1, 0.5, 0.5, 0.7)  # Rojizo = no válido
+					sprite.modulate = Color(1, 0.5, 0.5, 0.7)
 			else:
-				# Mantener el snap
 				_snap_preview_to_area(current_hover_area)
 		elif current_hover_area:
-			# Primera vez que hacemos snap
 			is_snapped = true
 			current_hover_area.hide_highlight()
 			_snap_preview_to_area(current_hover_area)
 			
-			# Cambiar color para indicar posición válida
 			var sprite = building_preview.get_node("SpritePreview")
 			if sprite:
-				sprite.modulate = Color(0.5, 1, 0.5, 0.9)  # Verde = válido para construir
+				sprite.modulate = Color(0.5, 1, 0.5, 0.9)
 		else:
-			# No hay área cerca, seguir el mouse
 			is_snapped = false
 			building_preview.global_position = mouse_pos
 			
-			# Indicar que no se puede construir aquí
 			var sprite = building_preview.get_node("SpritePreview")
 			if sprite:
-				sprite.modulate = Color(1, 0.5, 0.5, 0.7)  # Rojizo = no válido
+				sprite.modulate = Color(1, 0.5, 0.5, 0.7)
 
 func _toggle_menu(menu_index: int) -> void:
-	
 	var menu1 = $VBoxContainer/HBoxContainer/PanelContainer
 	var menu2 = $VBoxContainer/HBoxContainer/PanelContainer2
 
@@ -225,71 +126,48 @@ func _input(event: InputEvent) -> void:
 		if city_scene and city_scene.visible and current_state == BuildingState.NORMAL:
 			_toggle_construction_menu()
 			
-	if event.is_action_pressed("ui_cancel"):  # ESC
+	if event.is_action_pressed("ui_cancel"):
 		if city_scene and city_scene.visible:
 			if current_state == BuildingState.NORMAL and visible:
-				# Cerrar el menú si está abierto
 				visible = false
 			elif current_state == BuildingState.BUILDING:
-				# Volver al menú si estamos construyendo
 				_exit_building_mode_to_menu()
 			
 	if city_scene and city_scene.visible and current_state == BuildingState.BUILDING:
 		if event.is_action_pressed("cancel_construction"):
 			_exit_building_mode_to_menu()
-		elif event.is_action_pressed("ui_cancel"):  # ESC
+		elif event.is_action_pressed("ui_cancel"):
 			_exit_building_mode_to_menu()
 		elif event.is_action_pressed("ui_accept") or (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed):
 			_try_place_building()
 
 func _try_place_building() -> void: 
-	# Solo construir si estamos en snap con un área válida
 	if is_snapped and current_hover_area and not current_hover_area.is_occupied:
-		# Obtener datos del edificio
-		var building_data = buildings.get(selected_building_id, {})
-		var texture_path = building_data.get("texture_path", "")
-		
-		# Crear el edificio real
-		var new_building = Node2D.new()
-		new_building.name = selected_building_id + "_" + str(Time.get_ticks_msec())
-		
-		# Añadir sprite al edificio
-		var sprite = Sprite2D.new()
-		if texture_path != "":
-			sprite.texture = load(texture_path)
-		sprite.scale = Vector2(0.5, 0.5)
-		new_building.add_child(sprite)
-		
-		# Posicionar el edificio donde está el preview
-		new_building.global_position = building_preview.global_position
-		new_building.rotation = building_preview.rotation
-		
-		# Añadir el edificio a la escena
-		city_scene.add_child(new_building)
-		
-		# Marcar el área como ocupada
-		current_hover_area.is_occupied = true
-		current_hover_area.hide_highlight()
-		
-		# Guardar referencia del edificio en el área (opcional, útil para futuro)
-		current_hover_area.set_meta("building", new_building)
-		
-		# Limpiar el preview y volver al menú
-		_exit_building_mode_to_menu()
+		# Usar BuildingSystem para construir
+		if BuildingSystem.ref:
+			var building = BuildingSystem.ref.construct_building(
+				selected_building_id,
+				current_hover_area.slot_id,
+				building_preview.global_position
+			)
+			
+			if building:
+				_exit_building_mode_to_menu()
+			else:
+				print("No se pudo construir el edificio (recursos insuficientes)")
 
 func _exit_building_mode_to_menu() -> void:
-	# Limpiar el modo construcción
 	_cleanup_building_mode()
-	
-	# Mantener el menú abierto
 	visible = true
 
 func _update_available_areas() -> void:
-	var building_data = buildings.get(selected_building_id, {})
-	var allowed_types = building_data.get("allowed_area_types", [])
+	var building_data = DataBuilding.get_building_data(selected_building_id)
+	if building_data.is_empty():
+		return
 	
+	# Por ahora permitir construcción en cualquier slot libre
 	for area in construction_areas:
-		if not area.is_occupied and area.area_type in allowed_types:
+		if not area.is_occupied:
 			area.show_highlight()
 		else:
 			area.hide_highlight()
@@ -298,36 +176,26 @@ func _toggle_construction_menu() -> void:
 	visible = !visible
 
 func _on_building_selected(building_key: String) -> void:
-	var building_data = buildings.get(building_key, null)
-	if building_data:
+	var building_data = DataBuilding.get_building_data(building_key)
+	if not building_data.is_empty():
 		_start_building_mode(building_key)
+	else:
+		print("Building type not found: " + building_key)
 	emit_signal("building_selected")
 
 func _start_building_mode(building_id: String) -> void: 
 	current_state = BuildingState.BUILDING
 	selected_building_id = building_id
-	# Solo obtener áreas de construcción de la ciudad
-	construction_areas = get_tree().get_nodes_in_group("city_construction_areas")
+	construction_areas = get_tree().get_nodes_in_group("city_building_slots")
 	visible = false
 	_show_all_available_areas()
 	_create_building_preview(building_id)
 
 func _show_all_available_areas() -> void: 
-	var building_data = buildings.get(selected_building_id, {})
-	var allowed_types = building_data.get("allowed_area_types", [])
-		
 	for area in construction_areas:
-		# No mostrar highlight en áreas de extractores
-		if area.is_extractor_zone:
-			continue
-			
-		# Si no hay tipos específicos, mostrar todas las áreas libres (excepto extractores)
-		if allowed_types.is_empty():
+		if area is CityBuildingSlot:  # CAMBIADO: Verificar que es CityBuildingSlot
 			if not area.is_occupied:
 				area.show_highlight()
-		# Si hay tipos específicos, solo mostrar esas
-		elif not area.is_occupied and area.area_type in allowed_types:
-			area.show_highlight()
 
 func _create_building_preview(building_id: String) -> void: 
 	if building_preview: 
@@ -336,8 +204,8 @@ func _create_building_preview(building_id: String) -> void:
 	
 	building_preview = Area2D.new()
 	building_preview.name = "BuildingPreview"
-	building_preview.collision_layer = 2  # Layer 2 para preview
-	building_preview.collision_mask = 1   # IMPORTANTE: Mask 1 para detectar las áreas de construcción
+	building_preview.collision_layer = 2
+	building_preview.collision_mask = 1
 	
 	var collision = CollisionShape2D.new()
 	var shape = RectangleShape2D.new()
@@ -347,9 +215,9 @@ func _create_building_preview(building_id: String) -> void:
 	building_preview.add_child(collision)
 		
 	var sprite = Sprite2D.new()
-	var building_data = buildings.get(building_id, {})
+	var building_data = DataBuilding.get_building_data(building_id)
 	var texture_path = building_data.get("texture_path", "")
-	if texture_path != "":
+	if texture_path != "" and ResourceLoader.exists(texture_path):
 		sprite.texture = load(texture_path)
 	
 	sprite.modulate.a = 0.7
@@ -359,68 +227,55 @@ func _create_building_preview(building_id: String) -> void:
 	
 	building_preview.area_entered.connect(_on_preview_entered_area)
 	building_preview.area_exited.connect(_on_preview_exited_area)
-	var scene_manager = get_tree().get_first_node_in_group("scene_manager")
 	
+	var scene_manager = get_tree().get_first_node_in_group("scene_manager")
 	if not scene_manager:
 		scene_manager = get_parent().get_parent()
 	
 	scene_manager.add_child(building_preview)
 
 func _on_preview_entered_area(area: Area2D) -> void:
-	if area is ConstructionArea and not is_snapped:
-		var construction_area = area as ConstructionArea
+	if area is CityBuildingSlot and not is_snapped:  # CAMBIADO: CityBuildingSlot en lugar de ConstructionArea
+		var construction_area = area as CityBuildingSlot
 		
-		# No hacer snap en áreas ocupadas o en extractores
-		if construction_area.is_occupied or construction_area.is_extractor_zone:
+		if construction_area.is_occupied:
 			return
-			
-		var building_data = buildings.get(selected_building_id, {})
-		var allowed_types = building_data.get("allowed_area_types", [])
 		
-		# Si no hay tipos permitidos especificados, permitir todos (excepto extractores)
-		if allowed_types.is_empty() or construction_area.area_type in allowed_types:
-			current_hover_area = construction_area
+		current_hover_area = construction_area
 
 func _on_preview_exited_area(area: Area2D) -> void:
 	pass
 
 func _cancel_building_mode() -> void: 	
-	# Limpiar el modo construcción
 	_cleanup_building_mode()
-	
-	# Cerrar el menú completamente
 	visible = false
 
 func _cleanup_building_mode() -> void:
-	# Si estábamos en snap, mostrar el highlight de nuevo
 	if is_snapped and current_hover_area:
 		current_hover_area.show_highlight()
 	
-	# Limpiar el preview
 	if building_preview:
 		building_preview.queue_free()
 		building_preview = null
 	
-	# Resetear todas las variables
 	current_state = BuildingState.NORMAL
 	selected_building_id = ""
 	current_hover_area = null
 	is_snapped = false
 	
-	# Restaurar opacidad del menú
 	$VBoxContainer.modulate.a = 1.0
 	
-	# Ocultar todos los highlights
 	_hide_all_highlights()
 
 func _hide_all_highlights() -> void: 
 	for area in construction_areas: 
-		area.hide_highlight()
+		if area is CityBuildingSlot:  # CAMBIADO: Verificar tipo correcto
+			area.hide_highlight()
 
 func _on_building_hover(building_key: String, button: TextureButton) -> void: 
-	var building_data = buildings.get(building_key, null)
-	if building_data:
-		_show_tooltip(building_data["description"], button)
+	var building_data = DataBuilding.get_building_data(building_key)
+	if not building_data.is_empty():
+		_show_tooltip(building_data.get("description", ""), button)
 
 func _on_building_hover_exit() -> void: 
 	tooltip.visible = false
@@ -435,15 +290,13 @@ func _show_tooltip(description: String, button: TextureButton) -> void:
 	tooltip.position.x = button_global_pos.x
 	tooltip.position.y = button_global_pos.y - tooltip.size.y - 30
 
-func _snap_preview_to_area(area: ConstructionArea) -> void:
+func _snap_preview_to_area(area: CityBuildingSlot) -> void:  # CAMBIADO: CityBuildingSlot
 	if building_preview and area:
-		# Usar la posición global del centro directamente
 		var snap_position = area.get_global_center()
 		
 		building_preview.global_position = snap_position
 		building_preview.rotation = area.rotation
 		
-		# Asegurar que tiene color verde cuando está en snap
 		var sprite = building_preview.get_node("SpritePreview")
 		if sprite:
-			sprite.modulate = Color(0.5, 1, 0.5, 0.9)  # Verde = válido
+			sprite.modulate = Color(0.5, 1, 0.5, 0.9)
