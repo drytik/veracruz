@@ -14,7 +14,41 @@ func _init() -> void:
 func _ready():
 	layer = 10
 
+# ============================================
+# MÉTODO QUE FALTABA - show_extractor_popup
+# ============================================
+
+func show_extractor_popup(zone_id: String, zone_type: String, level: int = 0):
+	print("Opening extractor popup for zone: %s, type: %s, level: %d" % [zone_id, zone_type, level])
+	close_current_popup()
+	
+	# Buscar si ya existe un extractor en esta zona
+	if ExtractorSystem.ref:
+		var extractor = ExtractorSystem.ref.get_extractor_at_zone(zone_id)
+		if extractor:
+			# Si existe, mostrar el popup de gestión
+			show_extractor_management_popup(extractor)
+			return
+	
+	# Si no existe extractor, crear popup básico
+	var popup = _create_extractor_popup()
+	popup.setup_zone(zone_id, zone_type, level)
+	
+	add_child(popup)
+	
+	await get_tree().process_frame
+	_center_popup(popup)
+	
+	# Conectar señales
+	popup.closed.connect(_on_popup_closed)
+	popup.upgrade_requested.connect(_on_upgrade_requested)
+	popup.abandon_requested.connect(_on_abandon_requested)
+	
+	current_popup = popup
+
+# ============================================
 # POPUPS PARA ZONAS DEL MUNDO
+# ============================================
 
 func show_conquest_popup(zone_id: String, zone_name: String, cost: Dictionary):
 	close_current_popup()
@@ -46,6 +80,10 @@ func show_extractor_management_popup(extractor: ExtractorInstance):
 	_center_popup(popup)
 	current_popup = popup
 
+# ============================================
+# POPUPS PARA EDIFICIOS
+# ============================================
+
 func show_building_popup(building: BuildingInstance):
 	close_current_popup()
 	
@@ -55,6 +93,10 @@ func show_building_popup(building: BuildingInstance):
 	await get_tree().process_frame
 	_center_popup(popup)
 	current_popup = popup
+
+# ============================================
+# FUNCIONES HELPER
+# ============================================
 
 func close_current_popup():
 	if current_popup:
@@ -66,7 +108,123 @@ func _center_popup(popup: Control) -> void:
 	var popup_size = Vector2(popup.size)
 	popup.position = (viewport_size - popup_size) / 2
 
+func _on_popup_closed():
+	current_popup = null
+
+func _on_upgrade_requested(zone_id: String):
+	if ExtractorSystem.ref:
+		var extractor = ExtractorSystem.ref.get_extractor_at_zone(zone_id)
+		if extractor:
+			ExtractorSystem.ref.upgrade_extractor(extractor.instance_id)
+	
+	print("Upgrade requested for zone: " + zone_id)
+	close_current_popup()
+
+func _on_abandon_requested(zone_id: String):
+	if ExtractorSystem.ref:
+		var extractor = ExtractorSystem.ref.get_extractor_at_zone(zone_id)
+		if extractor:
+			ExtractorSystem.ref.demolish_extractor(extractor.instance_id)
+	
+	print("Abandon zone: " + zone_id)
+	close_current_popup()
+
+# ============================================
 # CREACIÓN DE POPUPS PROGRAMÁTICOS
+# ============================================
+
+func _create_extractor_popup() -> ExtractorPopup:
+	var popup = ExtractorPopup.new()
+	popup.name = "ExtractorPopup"
+	
+	var margin = MarginContainer.new()
+	margin.name = "MarginContainer"
+	margin.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	margin.add_theme_constant_override("margin_left", 20)
+	margin.add_theme_constant_override("margin_right", 20)
+	margin.add_theme_constant_override("margin_top", 20)
+	margin.add_theme_constant_override("margin_bottom", 20)
+	popup.add_child(margin)
+	
+	var vbox = VBoxContainer.new()
+	vbox.name = "VBoxContainer"
+	margin.add_child(vbox)
+	
+	# Header
+	var header = HBoxContainer.new()
+	header.name = "Header"
+	vbox.add_child(header)
+	
+	var title = Label.new()
+	title.name = "TitleLabel"
+	title.text = "Extractor"
+	title.add_theme_font_size_override("font_size", 20)
+	header.add_child(title)
+	
+	header.add_spacer(false)
+	
+	var close_btn = Button.new()
+	close_btn.name = "CloseButton"
+	close_btn.text = "X"
+	header.add_child(close_btn)
+	
+	vbox.add_child(HSeparator.new())
+	
+	# Descripción
+	var desc = Label.new()
+	desc.name = "DescriptionLabel"
+	desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	vbox.add_child(desc)
+	
+	# Recurso
+	var resource = Label.new()
+	resource.name = "ResourceLabel"
+	vbox.add_child(resource)
+	
+	vbox.add_child(HSeparator.new())
+	
+	# Workers section
+	var workers_section = VBoxContainer.new()
+	workers_section.name = "WorkersSection"
+	vbox.add_child(workers_section)
+	
+	var workers_label = Label.new()
+	workers_label.name = "WorkersLabel"
+	workers_section.add_child(workers_label)
+	
+	var slider = HSlider.new()
+	slider.name = "WorkersSlider"
+	slider.min_value = 0
+	slider.step = 1
+	workers_section.add_child(slider)
+	
+	# Producción
+	var prod = Label.new()
+	prod.name = "ProductionLabel"
+	vbox.add_child(prod)
+	
+	vbox.add_child(HSeparator.new())
+	
+	# Botones
+	var buttons = HBoxContainer.new()
+	buttons.name = "ButtonsContainer"
+	vbox.add_child(buttons)
+	
+	var upgrade = Button.new()
+	upgrade.name = "UpgradeButton"
+	upgrade.text = "Mejorar"
+	buttons.add_child(upgrade)
+	
+	buttons.add_spacer(false)
+	
+	var abandon = Button.new()
+	abandon.name = "AbandonButton"
+	abandon.text = "Abandonar"
+	buttons.add_child(abandon)
+	
+	print("Popup structure created")
+	
+	return popup
 
 func _create_conquest_popup(zone_id: String, zone_name: String, cost: Dictionary) -> Control:
 	var popup = PanelContainer.new()
@@ -102,7 +260,7 @@ func _create_conquest_popup(zone_id: String, zone_name: String, cost: Dictionary
 	var confirm = Button.new()
 	confirm.text = "Conquistar"
 	confirm.pressed.connect(func():
-		if ExtractorSystem.ref.unlock_zone(zone_id):
+		if ExtractorSystem.ref and ExtractorSystem.ref.unlock_zone(zone_id):
 			var zones = get_tree().get_nodes_in_group("world_extractor_zones")
 			for zone in zones:
 				if zone.zone_id == zone_id:
@@ -202,7 +360,7 @@ func _create_resource_selection_popup(zone_id: String, category: String, availab
 				zone_node = zone
 				break
 		
-		if zone_node:
+		if zone_node and ExtractorSystem.ref:
 			var extractor = ExtractorSystem.ref.construct_extractor(
 				category,
 				selected_resource,
@@ -274,7 +432,7 @@ func _create_extractor_management_popup(extractor: ExtractorInstance) -> Control
 		cost_text += ")"
 		upgrade_btn.text = cost_text
 		upgrade_btn.pressed.connect(func():
-			if ExtractorSystem.ref.upgrade_extractor(extractor.instance_id):
+			if ExtractorSystem.ref and ExtractorSystem.ref.upgrade_extractor(extractor.instance_id):
 				close_current_popup()
 				show_extractor_management_popup(extractor)
 		)
@@ -287,7 +445,7 @@ func _create_extractor_management_popup(extractor: ExtractorInstance) -> Control
 	demolish_btn.text = "Demoler"
 	demolish_btn.modulate = Color(1, 0.5, 0.5)
 	demolish_btn.pressed.connect(func():
-		if ExtractorSystem.ref.demolish_extractor(extractor.instance_id):
+		if ExtractorSystem.ref and ExtractorSystem.ref.demolish_extractor(extractor.instance_id):
 			close_current_popup()
 	)
 	buttons.add_child(demolish_btn)
@@ -366,7 +524,7 @@ func _create_building_management_popup(building: BuildingInstance) -> Control:
 		cost_text += ")"
 		upgrade_btn.text = cost_text
 		upgrade_btn.pressed.connect(func():
-			if BuildingSystem.ref.upgrade_building(building.instance_id):
+			if BuildingSystem.ref and BuildingSystem.ref.upgrade_building(building.instance_id):
 				close_current_popup()
 				show_building_popup(building)
 		)
@@ -379,7 +537,7 @@ func _create_building_management_popup(building: BuildingInstance) -> Control:
 	demolish_btn.text = "Demoler"
 	demolish_btn.modulate = Color(1, 0.5, 0.5)
 	demolish_btn.pressed.connect(func():
-		if BuildingSystem.ref.demolish_building(building.instance_id):
+		if BuildingSystem.ref and BuildingSystem.ref.demolish_building(building.instance_id):
 			close_current_popup()
 	)
 	buttons.add_child(demolish_btn)

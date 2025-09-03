@@ -2,7 +2,7 @@ class_name DataResources
 extends Resource
 
 ## Primarios 
-@export var wood : int = 50
+@export var wood : int = 100
 @export var clay : int = 0
 @export var stone : int = 30
 @export var silver : int = 0

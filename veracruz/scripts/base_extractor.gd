@@ -3,7 +3,7 @@ extends Node2D
 
 @export var extractor_id : String = ""
 @export var extractor_type : String = "lumbermill"
-@export var zone_area : ConstructionArea
+@export var zone_area : WorldExtractorZone
 @export var current_level : int = 0
 
 var sprite : Sprite2D
