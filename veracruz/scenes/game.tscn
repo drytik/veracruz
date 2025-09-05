@@ -74,7 +74,6 @@ editor_draw_limits = true
 script = ExtResource("2_lnu2h")
 
 [node name="CityScene" type="Node2D" parent="SceneManager"]
-visible = false
 
 [node name="CityUIManager" type="CanvasLayer" parent="SceneManager/CityScene"]
 visible = false
@@ -1223,6 +1222,7 @@ skew = 0.523599
 shape = SubResource("RectangleShape2D_80nbo")
 
 [node name="WorldScene" type="Node2D" parent="SceneManager"]
+visible = false
 
 [node name="WorldUIManager" type="CanvasLayer" parent="SceneManager/WorldScene"]
 script = ExtResource("10_kvpfn")

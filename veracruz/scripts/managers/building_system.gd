@@ -22,6 +22,11 @@ func _ready() -> void:
 	add_to_group("save_load_systems")
 
 func construct_building(building_type: String, slot_id: String, position: Vector2 = Vector2.ZERO) -> BuildingInstance:
+	print("BuildingSystem.construct_building:")
+	print("  - Type: %s" % building_type)
+	print("  - Slot: %s" % slot_id)
+	print("  - Position received: %s" % position)
+	
 	var template = DataBuilding.get_building_data(building_type)
 	if template.is_empty():
 		push_error("Building type not found: " + building_type)
@@ -33,14 +38,17 @@ func construct_building(building_type: String, slot_id: String, position: Vector
 		return null
 	
 	var building = BuildingInstance.new(building_type, slot_id)
+	
+	# IMPORTANTE: Guardar la posición para referencia, pero el visual se manejará diferente
 	building.position = position
 	
 	if Game.ref and Game.ref.data.progression:
 		Game.ref.data.progression.buildings.append(building)
 	
+	# Emitir señal para que el slot cree el visual
 	building_constructed.emit(building)
 	
-	print("Building constructed: %s at %s" % [building_type, slot_id])
+	print("Building instance created with position: %s" % building.position)
 	return building
 
 func demolish_building(instance_id: String) -> bool:
@@ -117,8 +125,10 @@ func load_state(data: Dictionary) -> void:
 	if not Game.ref or not Game.ref.data.progression:
 		return
 	
+	# Al cargar, recrear todos los visuales
 	for building in Game.ref.data.progression.buildings:
 		_recreate_building_visual(building)
 
 func _recreate_building_visual(building: BuildingInstance) -> void:
+	# Emitir señal para que el slot correspondiente cree el visual
 	building_constructed.emit(building)

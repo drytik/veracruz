@@ -20,7 +20,7 @@ var current_state: BuildingState = BuildingState.NORMAL
 var selected_building_id: String = ""
 var building_preview: Node2D = null
 var current_hover_area: CityBuildingSlot = null
-var snap_distance_threshold: float = 100.0
+var snap_distance_threshold: float = 150.0  # Aumentado para mejor detección
 var is_snapped: bool = false
 
 func _ready() -> void:
@@ -69,20 +69,16 @@ func _ready() -> void:
 		button1.pressed.connect(_on_menu_button_pressed.bind(0))
 	if button2:
 		button2.pressed.connect(_on_menu_button_pressed.bind(1))
-	
-	# Debug para verificar que encontramos el city_sprite
-	if city_sprite:
-		print("CitySprite found at scale: ", city_sprite.scale)
-	else:
-		push_warning("CitySprite not found!")
 
 func _process(delta: float) -> void: 
 	if current_state == BuildingState.BUILDING and building_preview:
 		_update_building_preview()
 
 func _update_building_preview() -> void:
-	# Obtener posición del mouse en el mundo
-	var mouse_pos = city_scene.get_global_mouse_position()
+	if not city_sprite:
+		return
+		
+	var mouse_global_pos = city_scene.get_global_mouse_position()
 	
 	# Buscar el slot válido más cercano
 	var closest_slot : CityBuildingSlot = null
@@ -92,14 +88,13 @@ func _update_building_preview() -> void:
 		if area is CityBuildingSlot and not area.is_occupied:
 			if area.can_place_building(selected_building_id):
 				var slot_center = area.get_global_center()
-				var distance = mouse_pos.distance_to(slot_center)
+				var distance = mouse_global_pos.distance_to(slot_center)
 				if distance < closest_distance:
 					closest_distance = distance
 					closest_slot = area
 	
 	# Actualizar el estado del hover
 	if closest_slot != current_hover_area:
-		# Limpiar el slot anterior
 		if current_hover_area:
 			current_hover_area.hide_highlight()
 		current_hover_area = closest_slot
@@ -107,21 +102,22 @@ func _update_building_preview() -> void:
 	# Posicionar el preview
 	if current_hover_area:
 		is_snapped = true
-		var snap_pos = current_hover_area.get_global_center()
-		building_preview.global_position = snap_pos
 		
-		# No mostrar highlight cuando estamos snapeados
+		# El preview necesita la misma posición local que tendrá el building
+		var local_pos = current_hover_area.get_local_position_for_building()
+		building_preview.position = local_pos
+		
 		current_hover_area.hide_highlight()
 		
-		# Visual verde para indicar que se puede construir
 		var sprite = building_preview.get_node_or_null("SpritePreview")
 		if sprite:
 			sprite.modulate = Color(0.5, 1, 0.5, 0.9)
 	else:
 		is_snapped = false
-		building_preview.global_position = mouse_pos
+		# Convertir posición del mouse a espacio local del CitySprite
+		var mouse_local = city_sprite.to_local(mouse_global_pos)
+		building_preview.position = mouse_local
 		
-		# Visual rojo para indicar que no se puede construir
 		var sprite = building_preview.get_node_or_null("SpritePreview")
 		if sprite:
 			sprite.modulate = Color(1, 0.5, 0.5, 0.7)
@@ -160,27 +156,27 @@ func _input(event: InputEvent) -> void:
 
 func _try_place_building() -> void: 
 	if not is_snapped or not current_hover_area or current_hover_area.is_occupied:
-		print("Cannot place: snapped=%s, area=%s" % [is_snapped, current_hover_area != null])
+		print("Cannot place building - not snapped to valid slot")
 		return
 	
-	# Obtener la posición correcta del slot
-	var build_position = current_hover_area.get_global_center()
+	var slot_id = current_hover_area.slot_id
+	var building_position = current_hover_area.get_local_position_for_building()
 	
-	print("Attempting to build %s at slot %s, position %s" % [
-		selected_building_id, 
-		current_hover_area.slot_id, 
-		build_position
-	])
+	print("Placing building:")
+	print("  - Type: %s" % selected_building_id)
+	print("  - Slot: %s" % slot_id)
+	print("  - Local position in CitySprite: %s" % building_position)
 	
-	# Marcar el slot como ocupado inmediatamente
+	# Marcar el slot como ocupado
 	current_hover_area.place_building(selected_building_id)
 	
-	# Usar BuildingSystem para construir
+	# Construir el edificio
 	if BuildingSystem.ref:
+		# Pasar la posición local correcta para el building
 		var building = BuildingSystem.ref.construct_building(
 			selected_building_id,
-			current_hover_area.slot_id,
-			build_position
+			slot_id,
+			building_position
 		)
 		
 		if building:
@@ -188,7 +184,6 @@ func _try_place_building() -> void:
 			_exit_building_mode_to_menu()
 		else:
 			print("Failed to construct building (insufficient resources?)")
-			# Revertir el estado del slot
 			current_hover_area.is_occupied = false
 
 func _exit_building_mode_to_menu() -> void:
@@ -237,7 +232,7 @@ func _create_building_preview(building_id: String) -> void:
 	
 	building_preview = Node2D.new()
 	building_preview.name = "BuildingPreview"
-	building_preview.z_index = 10  # Asegurar que esté arriba
+	building_preview.z_index = 10
 	
 	var sprite = Sprite2D.new()
 	sprite.name = "SpritePreview"
@@ -247,33 +242,31 @@ func _create_building_preview(building_id: String) -> void:
 	
 	if texture_path != "" and ResourceLoader.exists(texture_path):
 		sprite.texture = load(texture_path)
-		sprite.scale = Vector2(0.25, 0.25)  # Misma escala que los edificios reales
 	else:
-		# Crear placeholder
+		# Placeholder
 		var placeholder = ColorRect.new()
-		placeholder.size = Vector2(60, 60)
-		placeholder.position = Vector2(-30, -30)
+		placeholder.size = Vector2(120, 120)
+		placeholder.position = Vector2(-60, -60)
 		placeholder.color = Color(0.7, 0.7, 0.3, 0.7)
 		placeholder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		building_preview.add_child(placeholder)
 		
 		var label = Label.new()
 		label.text = building_data.get("name", "Building")
-		label.position = Vector2(-25, -5)
-		label.add_theme_font_size_override("font_size", 10)
+		label.position = Vector2(-50, -10)
+		label.add_theme_font_size_override("font_size", 20)
 		building_preview.add_child(label)
 	
 	sprite.modulate.a = 0.7
 	building_preview.add_child(sprite)
 	
-	# Añadir al CitySprite para que tenga la misma transformación
+	# Añadir como hijo del CitySprite
 	if city_sprite:
 		city_sprite.add_child(building_preview)
-		print("Preview added to CitySprite")
+		print("Preview added as child of CitySprite")
 	else:
-		# Fallback: añadir al city_scene
+		push_error("CitySprite not found!")
 		city_scene.add_child(building_preview)
-		print("Preview added to CityScene (fallback)")
 
 func _cancel_building_mode() -> void:
 	_cleanup_building_mode()
@@ -319,8 +312,3 @@ func _show_tooltip(description: String, button: TextureButton) -> void:
 	tooltip.visible = true
 	tooltip.position.x = button.global_position.x
 	tooltip.position.y = button.global_position.y - tooltip.size.y - 30
-
-func _snap_preview_to_area(area: CityBuildingSlot) -> void:
-	if building_preview and area:
-		var snap_position = area.get_global_center()
-		building_preview.global_position = snap_position

@@ -17,24 +17,18 @@ enum SlotSize {
 @export var allowed_building_types : Array[String] = []
 
 var highlight_polygon : Polygon2D
-var current_building : Node2D = null
 var slot_id : String = ""
 var current_building_id : String = ""
 var current_building_visual : Node2D
-var slot_global_position : Vector2  # Almacenar la posición global real
 
 func _ready() -> void:
 	collision_layer = 1
-	collision_mask = 0  # No necesita detectar otros
+	collision_mask = 0
 	
-	slot_id = name + "_" + str(get_instance_id())
+	slot_id = "slot_" + str(get_instance_id())
 	
 	add_to_group("city_building_slots")
 	
-	# Calcular y almacenar la posición global real
-	_update_global_position()
-	
-	# Crear highlight después de un frame
 	call_deferred("_create_highlight")
 	
 	input_pickable = true
@@ -43,14 +37,6 @@ func _ready() -> void:
 	mouse_exited.connect(_on_mouse_exited)
 	
 	call_deferred("_initialize_slot")
-
-func _update_global_position() -> void:
-	# Obtener la posición global real considerando todas las transformaciones
-	var collision_shape = get_node_or_null("CollisionShape2D")
-	if collision_shape:
-		slot_global_position = collision_shape.global_position
-	else:
-		slot_global_position = global_position
 
 func _initialize_slot() -> void:
 	_check_existing_building()
@@ -74,36 +60,50 @@ func _create_building_visual(building: BuildingInstance) -> void:
 		current_building_visual.queue_free()
 		current_building_visual = null
 	
-	current_building_visual = Node2D.new()
-	current_building_visual.name = "BuildingVisual"
-	current_building_visual.position = Vector2.ZERO  # Posición local
-	
-	var template = building.get_template()
-	if template.is_empty():
+	# Crear el visual como hijo DIRECTO del CitySprite, NO del slot
+	var city_sprite = get_node_or_null("/root/Game/SceneManager/CityScene/CitySprite")
+	if not city_sprite:
+		push_error("CitySprite not found!")
 		return
 	
+	current_building_visual = Node2D.new()
+	current_building_visual.name = "Building_" + building.building_type + "_" + str(building.instance_id)
+	
+	# Posicionar el visual en la posición LOCAL correcta dentro del CitySprite
+	var collision_shape = get_node_or_null("CollisionShape2D")
+	if collision_shape:
+		# Usar la posición del collision shape que ya tiene las transformaciones correctas
+		current_building_visual.position = collision_shape.position
+	else:
+		# Fallback: convertir nuestra posición global a local del CitySprite
+		current_building_visual.position = city_sprite.to_local(global_position)
+	
+	var template = building.get_template()
 	var texture_path = template.get("texture_path", "")
 	
 	if texture_path != "" and ResourceLoader.exists(texture_path):
 		var sprite = Sprite2D.new()
 		sprite.texture = load(texture_path)
-		sprite.scale = Vector2(0.25, 0.25)  # Escala más pequeña para los edificios
 		current_building_visual.add_child(sprite)
 	else:
+		# Placeholder
 		var placeholder = ColorRect.new()
-		placeholder.size = Vector2(60, 60)
-		placeholder.position = Vector2(-30, -30)
+		placeholder.size = Vector2(120, 120)
+		placeholder.position = Vector2(-60, -60)
 		placeholder.color = Color(0.4, 0.4, 0.6, 0.8)
 		placeholder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		current_building_visual.add_child(placeholder)
 		
 		var label = Label.new()
 		label.text = template.get("name", "Building")
-		label.position = Vector2(-25, -5)
-		label.add_theme_font_size_override("font_size", 10)
+		label.position = Vector2(-50, -10)
+		label.add_theme_font_size_override("font_size", 20)
 		current_building_visual.add_child(label)
 	
-	add_child(current_building_visual)
+	# Añadir como hijo del CitySprite, no del slot
+	city_sprite.add_child(current_building_visual)
+	
+	print("Building visual created at position: ", current_building_visual.position)
 
 func _create_highlight() -> void:
 	var collision_shape = get_node_or_null("CollisionShape2D")
@@ -119,7 +119,6 @@ func _create_highlight() -> void:
 		var rect_shape = collision_shape.shape as RectangleShape2D
 		var size = rect_shape.size * collision_shape.scale.abs()
 		
-		# Crear puntos del rectángulo
 		var points = PackedVector2Array([
 			Vector2(-size.x/2, -size.y/2),
 			Vector2(size.x/2, -size.y/2),
@@ -130,7 +129,6 @@ func _create_highlight() -> void:
 		highlight_polygon.polygon = points
 		highlight_polygon.position = collision_shape.position
 		highlight_polygon.rotation = collision_shape.rotation
-		highlight_polygon.scale = Vector2(1, 1)  # No aplicar escala extra
 	
 	highlight_polygon.visible = false
 	add_child(highlight_polygon)
@@ -144,30 +142,31 @@ func hide_highlight() -> void:
 	if highlight_polygon:
 		highlight_polygon.visible = false
 
-func show_invalid_highlight() -> void:
-	if highlight_polygon:
-		highlight_polygon.visible = true
-		highlight_polygon.color = Color(0.8, 0.3, 0.3, 0.4)
-
 func get_global_center() -> Vector2:
-	_update_global_position()  # Actualizar por si acaso
-	return slot_global_position
+	var collision_shape = get_node_or_null("CollisionShape2D")
+	if collision_shape:
+		return collision_shape.global_position
+	return global_position
+
+func get_local_position_for_building() -> Vector2:
+	# Obtener la posición LOCAL que debe tener el building dentro del CitySprite
+	var collision_shape = get_node_or_null("CollisionShape2D")
+	if collision_shape:
+		return collision_shape.position
+	return position
 
 func can_place_building(building_type: String) -> bool:
 	if is_occupied:
 		return false
 	
-	# Verificar restricciones especiales
 	if slot_size == SlotSize.PORT:
 		return building_type == "port"
 	elif slot_size == SlotSize.WALL:
 		return building_type == "wall"
 	
-	# Para otros slots, verificar si el edificio es especial
 	if building_type in ["port", "wall"]:
 		return false
 	
-	# Si no hay restricciones específicas, permitir
 	return allowed_building_types.is_empty() or building_type in allowed_building_types
 
 func place_building(building_type: String) -> bool:
@@ -176,7 +175,6 @@ func place_building(building_type: String) -> bool:
 	
 	is_occupied = true
 	hide_highlight()
-	
 	return true
 
 func remove_building() -> void:
